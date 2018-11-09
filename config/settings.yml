@@ -1,0 +1,13 @@
+plugins:
+  openid_connect_issuer:
+    default: ""
+  openid_connect_client_id:
+    default: ""
+  openid_connect_client_secret:
+    default: ""
+  openid_connect_authorize_scope:
+    default: "openid"
+  openid_connect_token_scope:
+    default: ""
+  openid_connect_use_userinfo:
+    default: true
