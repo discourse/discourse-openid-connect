@@ -9,7 +9,7 @@ require_relative 'app/models/user_associated_account'
 
 class Auth::ManagedAuthenticator < Auth::Authenticator
   def match_by_email
-    false
+    true
   end
 
   def after_authenticate(auth_token)
