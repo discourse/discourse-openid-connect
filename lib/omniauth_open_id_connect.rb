@@ -83,6 +83,8 @@ module ::OmniAuth
       def callback_phase
         discover! if options[:discovery]
         oauth2_callback_phase = super
+        return oauth2_callback_phase if env['omniauth.error']
+
         if id_token_info["nonce"].empty? || id_token_info["nonce"] != session.delete("omniauth.nonce")
           return fail!(:csrf_detected, CallbackError.new(:csrf_detected, "CSRF detected"))
         end
