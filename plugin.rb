@@ -60,7 +60,7 @@ end
 class OpenIDConnectAuthenticator < Auth::ManagedAuthenticator
 
   def name
-    'openid_connect'
+    'oidc'
   end
 
   def enabled?
@@ -69,7 +69,7 @@ class OpenIDConnectAuthenticator < Auth::ManagedAuthenticator
 
   def register_middleware(omniauth)
     omniauth.provider :openid_connect,
-      name: :openid_connect,
+      name: :oidc,
       cache: lambda { |key, &blk| Rails.cache.fetch(key, expires_in: 10.minutes, &blk) },
       setup: lambda { |env|
         opts = env['omniauth.strategy'].options
