@@ -6,6 +6,7 @@ module ::OmniAuth
       option :scope, "openid"
       option :discovery, true
       option :cache, lambda { |key, &blk| blk.call } # Default no-op cache
+      option :authorize_options, [:p]
 
       option :client_options,
         site: 'https://op.com/',
@@ -31,6 +32,10 @@ module ::OmniAuth
 
       def authorize_params
         super.tap do |params|
+          options[:authorize_options].each do |k|
+            params[k] = request.params[k.to_s] unless [nil, ''].include?(request.params[k.to_s])
+          end
+
           params[:scope] = options[:scope]
           session['omniauth.nonce'] = params[:nonce] = SecureRandom.hex(32)
         end
