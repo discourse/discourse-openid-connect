@@ -34,7 +34,7 @@ class Auth::ManagedAuthenticator < Auth::Authenticator
 
     association = UserAssociatedAccount.find_by(provider_name: auth_token[:provider], provider_uid: auth_token[:uid])
 
-    if match_by_email && association.nil? && user = User.find_by_email(email)
+    if match_by_email && association.nil? && user = User.find_by_email(email) && !UserAssociatedAccount.exists?(user: user, provider_name: auth_token[:provider])
       association = UserAssociatedAccount.create!(user: user, provider_name: auth_token[:provider], provider_uid: auth_token[:uid], info: auth_token[:info], credentials: auth_token[:credentials], extra: auth_token[:extra])
     end
 
@@ -68,9 +68,18 @@ class OpenIDConnectAuthenticator < Auth::ManagedAuthenticator
   end
 
   def register_middleware(omniauth)
+
     omniauth.provider :openid_connect,
       name: :oidc,
       cache: lambda { |key, &blk| Rails.cache.fetch(key, expires_in: 10.minutes, &blk) },
+      error_handler: lambda { |error, message|
+        handlers = SiteSetting.openid_connect_error_redirects.split("\n")
+        handlers.each do |row|
+          parts = row.split("|")
+          return parts[1] if message.include? parts[0]
+        end
+        nil
+      },
       setup: lambda { |env|
         opts = env['omniauth.strategy'].options
         opts.deep_merge!(
@@ -78,7 +87,7 @@ class OpenIDConnectAuthenticator < Auth::ManagedAuthenticator
           client_id: SiteSetting.openid_connect_client_id,
           client_secret: SiteSetting.openid_connect_client_secret,
           client_options: {
-            discovery_document: SiteSetting.openid_connect_issuer,
+            discovery_document: SiteSetting.openid_connect_discovery_document,
           },
           scope: SiteSetting.openid_connect_authorize_scope,
           token_params: {

@@ -6,6 +6,7 @@ module ::OmniAuth
       option :scope, "openid"
       option :discovery, true
       option :cache, lambda { |key, &blk| blk.call } # Default no-op cache
+      option :error_handler, lambda { |error, message| nil } # Default no-op handler
       option :authorize_options, [:p]
 
       option :client_options,
@@ -86,6 +87,9 @@ module ::OmniAuth
       end
 
       def callback_phase
+        if request.params["error"] && request.params["error_reason"] && response = options.error_handler.call(request.params["error"], request.params["error_reason"])
+          return redirect(response)
+        end
         discover! if options[:discovery]
         oauth2_callback_phase = super
         return oauth2_callback_phase if env['omniauth.error']

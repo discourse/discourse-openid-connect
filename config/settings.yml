@@ -1,5 +1,5 @@
 plugins:
-  openid_connect_issuer:
+  openid_connect_discovery_document:
     default: ""
   openid_connect_client_id:
     default: ""
@@ -11,3 +11,7 @@ plugins:
     default: ""
   openid_connect_use_userinfo:
     default: true
+  openid_connect_error_redirects:
+    default: ''
+    type: list
+    list_type: secret
