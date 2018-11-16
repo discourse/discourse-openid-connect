@@ -87,7 +87,7 @@ module ::OmniAuth
       end
 
       def callback_phase
-        if request.params["error"] && request.params["error_reason"] && response = options.error_handler.call(request.params["error"], request.params["error_reason"])
+        if request.params["error"] && request.params["error_description"] && response = options.error_handler.call(request.params["error"], request.params["error_description"])
           return redirect(response)
         end
         discover! if options[:discovery]
