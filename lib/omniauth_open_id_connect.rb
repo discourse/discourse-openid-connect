@@ -8,6 +8,7 @@ module ::OmniAuth
       option :cache, lambda { |key, &blk| blk.call } # Default no-op cache
       option :error_handler, lambda { |error, message| nil } # Default no-op handler
       option :authorize_options, [:p]
+      option :token_options, [:p]
 
       option :client_options,
         site: 'https://op.com/',
@@ -39,6 +40,10 @@ module ::OmniAuth
 
           params[:scope] = options[:scope]
           session['omniauth.nonce'] = params[:nonce] = SecureRandom.hex(32)
+
+          options[:token_options].each do |k|
+            session["omniauth.param.#{k}"] = request.params[k.to_s] unless [nil, ''].include?(request.params[k.to_s])
+          end
         end
       end
 
@@ -103,8 +108,16 @@ module ::OmniAuth
       private
 
       def callback_url
-        # return "http://localhost:8080/auth/callback/"
         full_host + script_name + callback_path
+      end
+
+      def token_params
+        params = {}
+        options[:token_options].each do |k|
+          val = session.delete("omniauth.param.#{k}")
+          params[k] = val unless [nil, ''].include?(val)
+        end
+        super.merge(params)
       end
 
       def get_token_options
