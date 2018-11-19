@@ -5,5 +5,5 @@ en:
     openid_connect_client_secret: "OpenID Connect client secret"
     openid_connect_authorize_scope: "The scopes sent to the authorize endpoint. This must include 'openid'."
     openid_connect_token_scope: "The scopes sent when requesting the token endpoint. The official specification does not require this."
-    openid_connect_use_userinfo: "Contact the userinfo endpoint for user metadata. If left blank, the 'code' will be used instead."
+    openid_connect_use_userinfo: "Contact the userinfo endpoint for user metadata. If left blank, the 'id_token' will be used instead."
     openid_connect_error_redirects: "If the callback error_reason contains the first parameter, the user will be redirected to the URL in the second parameter"
