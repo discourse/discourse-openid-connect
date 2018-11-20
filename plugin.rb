@@ -34,7 +34,7 @@ class Auth::ManagedAuthenticator < Auth::Authenticator
 
     association = UserAssociatedAccount.find_by(provider_name: auth_token[:provider], provider_uid: auth_token[:uid])
 
-    if match_by_email && association.nil? && user = User.find_by_email(email) && !UserAssociatedAccount.exists?(user: user, provider_name: auth_token[:provider])
+    if match_by_email && association.nil? && (user = User.find_by_email(email)) && !UserAssociatedAccount.exists?(user: user, provider_name: auth_token[:provider])
       association = UserAssociatedAccount.create!(user: user, provider_name: auth_token[:provider], provider_uid: auth_token[:uid], info: auth_token[:info], credentials: auth_token[:credentials], extra: auth_token[:extra])
     end
 
