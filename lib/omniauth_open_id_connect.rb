@@ -28,24 +28,29 @@ module ::OmniAuth
           client.request(:get, options[:client_options][:discovery_document], parse: :json).parsed
         end
 
-        {
+        discovery_params = {
           authorize_url: "authorization_endpoint",
           token_url: "token_endpoint",
           site: "issuer"
-        }.each do |internal_key, external_key|
+        }
+
+        discovery_params.each do |internal_key, external_key|
           val = discovery_document[external_key].to_s
           raise ::OmniAuth::OpenIDConnect::DiscoveryError.new("missing discovery parameter #{external_key}") if val.nil? || val.empty?
           options[:client_options][internal_key] = val
         end
 
         userinfo_endpoint = options[:client_options][:userinfo_endpoint] = discovery_document["userinfo_endpoint"].to_s
-        if userinfo_endpoint.nil? || userinfo_endpoint.empty?
-          options.use_userinfo = false
-        end
+        options.use_userinfo = false if userinfo_endpoint.nil? || userinfo_endpoint.empty?
       end
 
       def request_phase
-        discover! if options[:discovery]
+        begin
+          discover! if options[:discovery]
+        rescue ::OmniAuth::OpenIDConnect::DiscoveryError => e
+          fail!(:openid_connect_discovery_error, e)
+        end
+
         super
       end
 
