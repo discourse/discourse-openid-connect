@@ -63,7 +63,7 @@ describe OmniAuth::Strategies::OpenIDConnect do
     expect(subject.options.use_userinfo).to eq(false)
   end
 
-  context 'with valid document' do
+  context 'with valid discovery document' do
     before do
       stub_request(:get, "https://id.example.com/.well-known/openid-configuration").
         to_return(status: 200, body: {
@@ -72,15 +72,35 @@ describe OmniAuth::Strategies::OpenIDConnect do
           "token_endpoint": "https://id.example.com/token",
           "userinfo_endpoint": "https://id.example.com/userinfo",
         }.to_json)
+
+      allow(subject).to receive(:request) do
+        double("Request", params: { "p" => "someallowedvalue", "somethingelse" => "notallowed" })
+      end
+
+      subject.discover!
     end
 
-    it "discovers correctly" do
-      subject.discover!
+    it "loads parameters correctly" do
       expect(subject.options.client_options.site).to eq("https://id.example.com/")
       expect(subject.options.client_options.authorize_url).to eq("https://id.example.com/authorize")
       expect(subject.options.client_options.token_url).to eq("https://id.example.com/token")
       expect(subject.options.client_options.userinfo_endpoint).to eq("https://id.example.com/userinfo")
     end
+
+    describe "authorize parameters" do
+      it "passes through allowed parameters" do
+        expect(subject.authorize_params[:p]).to eq("someallowedvalue")
+        expect(subject.authorize_params[:somethingelse]).to eq(nil)
+
+        expect(subject.session["omniauth.param.p"]).to eq("someallowedvalue")
+      end
+
+      it "sets a nonce" do
+        expect((nonce = subject.authorize_params[:nonce]).size).to eq(64)
+        expect(subject.session['omniauth.nonce']).to eq(nonce)
+      end
+    end
+
   end
 
 end
