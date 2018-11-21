@@ -1,30 +1,47 @@
 require 'omniauth-oauth2'
 
 module ::OmniAuth
+  module OpenIDConnect
+    class DiscoveryError < Error; end
+  end
+
   module Strategies
     class OpenIDConnect < OmniAuth::Strategies::OAuth2
       option :scope, "openid"
       option :discovery, true
+      option :use_userinfo, true
       option :cache, lambda { |key, &blk| blk.call } # Default no-op cache
       option :error_handler, lambda { |error, message| nil } # Default no-op handler
-      option :authorize_options, [:p]
-      option :token_options, [:p]
+      option :passthrough_authorize_options, [:p]
+      option :passthrough_token_options, [:p]
 
       option :client_options,
-        site: 'https://op.com/',
-        authorize_url: 'authorize',
-        token_url: 'token',
-        userinfo_endpoint: 'userinfo',
+        discovery_document: nil,
+        site: nil,
+        authorize_url: nil,
+        token_url: nil,
+        userinfo_endpoint: nil,
         auth_scheme: :basic_auth
 
       def discover!
         discovery_document = options.cache.call("openid_discovery_#{options[:client_options][:discovery_document]}") do
           client.request(:get, options[:client_options][:discovery_document], parse: :json).parsed
         end
-        options[:client_options][:authorize_url] = discovery_document["authorization_endpoint"].to_s
-        options[:client_options][:token_url] = discovery_document["token_endpoint"].to_s
-        options[:client_options][:userinfo_endpoint] = discovery_document["userinfo_endpoint"].to_s
-        options[:client_options][:site] = discovery_document["issuer"].to_s
+
+        {
+          authorize_url: "authorization_endpoint",
+          token_url: "token_endpoint",
+          site: "issuer"
+        }.each do |internal_key, external_key|
+          val = discovery_document[external_key].to_s
+          raise ::OmniAuth::OpenIDConnect::DiscoveryError.new("missing discovery parameter #{external_key}") if val.nil? || val.empty?
+          options[:client_options][internal_key] = val
+        end
+
+        userinfo_endpoint = options[:client_options][:userinfo_endpoint] = discovery_document["userinfo_endpoint"].to_s
+        if userinfo_endpoint.nil? || userinfo_endpoint.empty?
+          options.use_userinfo = false
+        end
       end
 
       def request_phase
@@ -34,14 +51,14 @@ module ::OmniAuth
 
       def authorize_params
         super.tap do |params|
-          options[:authorize_options].each do |k|
+          options[:passthrough_authorize_options].each do |k|
             params[k] = request.params[k.to_s] unless [nil, ''].include?(request.params[k.to_s])
           end
 
           params[:scope] = options[:scope]
           session['omniauth.nonce'] = params[:nonce] = SecureRandom.hex(32)
 
-          options[:token_options].each do |k|
+          options[:passthrough_token_options].each do |k|
             session["omniauth.param.#{k}"] = request.params[k.to_s] unless [nil, ''].include?(request.params[k.to_s])
           end
         end
@@ -95,8 +112,15 @@ module ::OmniAuth
         if request.params["error"] && request.params["error_description"] && response = options.error_handler.call(request.params["error"], request.params["error_description"])
           return redirect(response)
         end
-        discover! if options[:discovery]
+
+        begin
+          discover! if options[:discovery]
+        rescue ::OmniAuth::OpenIDConnect::DiscoveryError => e
+          fail!(:openid_connect_discovery_error, e)
+        end
+
         oauth2_callback_phase = super
+
         return oauth2_callback_phase if env['omniauth.error']
 
         if id_token_info["nonce"].empty? || id_token_info["nonce"] != session.delete("omniauth.nonce")
@@ -113,7 +137,7 @@ module ::OmniAuth
 
       def token_params
         params = {}
-        options[:token_options].each do |k|
+        options[:passthrough_token_options].each do |k|
           val = session.delete("omniauth.param.#{k}")
           params[k] = val unless [nil, ''].include?(val)
         end

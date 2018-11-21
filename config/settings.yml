@@ -9,8 +9,6 @@ plugins:
     default: "openid"
   openid_connect_token_scope:
     default: ""
-  openid_connect_use_userinfo:
-    default: true
   openid_connect_error_redirects:
     default: ''
     type: list

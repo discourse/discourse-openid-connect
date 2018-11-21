@@ -83,7 +83,6 @@ class OpenIDConnectAuthenticator < Auth::ManagedAuthenticator
       setup: lambda { |env|
         opts = env['omniauth.strategy'].options
         opts.deep_merge!(
-          use_userinfo: SiteSetting.openid_connect_use_userinfo,
           client_id: SiteSetting.openid_connect_client_id,
           client_secret: SiteSetting.openid_connect_client_secret,
           client_options: {
