@@ -78,30 +78,26 @@ module ::OmniAuth
         super.merge(params)
       end
 
-      uid { id_token_info['sub'] }
+      def callback_phase
+        if request.params["error"] && request.params["error_description"] && response = options.error_handler.call(request.params["error"], request.params["error_description"])
+          return redirect(response)
+        end
 
-      info do
-        data_source = options.use_userinfo ? userinfo_response : id_token_info
-        prune!(
-          name: data_source['name'],
-          email: data_source['email'],
-          first_name: data_source['given_name'],
-          last_name: data_source['family_name'],
-          nickname: data_source['preferred_username'],
-          picture: data_source['picture']
-        )
-      end
+        begin
+          discover! if options[:discovery]
 
-      extra do
-        hash = {}
-        hash[:raw_info] = options.use_userinfo ? userinfo_response : id_token_info
-        prune! hash
-      end
+          oauth2_callback_phase = super
+          return oauth2_callback_phase if env['omniauth.error']
 
-      def userinfo_response
-        @raw_info ||= access_token.get(options[:client_options][:userinfo_endpoint]).parsed
-        return fail!(:csrf_detected, CallbackError.new(:csrf_detected, "CSRF detected")) unless @raw_info['sub'] == id_token_info['sub']
-        @raw_info
+          if id_token_info["nonce"].nil? || id_token_info["nonce"].empty? || id_token_info["nonce"] != session.delete("omniauth.nonce")
+            return fail!(:csrf_detected, CallbackError.new(:csrf_detected, "CSRF detected"))
+          end
+          oauth2_callback_phase
+        rescue ::OmniAuth::OpenIDConnect::DiscoveryError => e
+          fail!(:openid_connect_discovery_error, e)
+        rescue JWT::DecodeError => e
+          fail!(:jwt_decode_failed, e)
+        end
       end
 
       def id_token_info
@@ -122,25 +118,30 @@ module ::OmniAuth
           ).first
       end
 
-      def callback_phase
-        if request.params["error"] && request.params["error_description"] && response = options.error_handler.call(request.params["error"], request.params["error_description"])
-          return redirect(response)
-        end
+      def userinfo_response
+        @raw_info ||= access_token.get(options[:client_options][:userinfo_endpoint]).parsed
+        return fail!(:csrf_detected, CallbackError.new(:csrf_detected, "CSRF detected")) unless @raw_info['sub'] == id_token_info['sub']
+        @raw_info
+      end
 
-        begin
-          discover! if options[:discovery]
-        rescue ::OmniAuth::OpenIDConnect::DiscoveryError => e
-          fail!(:openid_connect_discovery_error, e)
-        end
+      uid { id_token_info['sub'] }
 
-        oauth2_callback_phase = super
+      info do
+        data_source = options.use_userinfo ? userinfo_response : id_token_info
+        prune!(
+          name: data_source['name'],
+          email: data_source['email'],
+          first_name: data_source['given_name'],
+          last_name: data_source['family_name'],
+          nickname: data_source['preferred_username'],
+          picture: data_source['picture']
+        )
+      end
 
-        return oauth2_callback_phase if env['omniauth.error']
-
-        if id_token_info["nonce"].empty? || id_token_info["nonce"] != session.delete("omniauth.nonce")
-          return fail!(:csrf_detected, CallbackError.new(:csrf_detected, "CSRF detected"))
-        end
-        oauth2_callback_phase
+      extra do
+        hash = {}
+        hash[:raw_info] = options.use_userinfo ? userinfo_response : id_token_info
+        prune! hash
       end
 
       private
@@ -169,7 +170,7 @@ module ::OmniAuth
 
       def build_access_token
         return super if options.use_userinfo
-        response = client.request(:get, options[:client_options][:token_url], params: get_token_options)
+        response = client.request(:post, options[:client_options][:token_url], body: get_token_options)
         ::OAuth2::AccessToken.from_hash(client, response.parsed)
       end
 

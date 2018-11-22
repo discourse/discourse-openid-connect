@@ -8,7 +8,7 @@ WebMock.disable_net_connect!
 describe OmniAuth::Strategies::OpenIDConnect do
   # let(:request) { double('Request', params: {}, cookies: {}, env: {}) }
   let(:app) do
-    lambda do
+    lambda do |*args|
       [200, {}, ['Hello.']]
     end
   end
@@ -107,9 +107,87 @@ describe OmniAuth::Strategies::OpenIDConnect do
         allow(subject).to receive(:request) { double("Request", params: {}) }
         expect(subject.token_params[:p]).to eq("someallowedvalue")
       end
-
     end
 
+    describe "callback_phase" do
+      before do
+        auth_params = subject.authorize_params
+
+        allow(subject).to receive(:full_host).and_return("https://example.com")
+
+        allow(subject).to receive(:request) do
+          double("Request", params: { "state" => auth_params[:state], "code" => "supersecretcode" })
+        end
+
+        payload = {
+          iss: "https://id.example.com/",
+          sub: "someuserid",
+          aud: "appid",
+          iat: Time.now.to_i - 30,
+          exp: Time.now.to_i + 120,
+          nonce: auth_params[:nonce],
+          name: "My Auth Token Name",
+          email: "tokenemail@example.com"
+        }
+        @token = JWT.encode payload, nil, 'none'
+      end
+
+      context "with userinfo disabled" do
+        before do
+          stub_request(:post, "https://id.example.com/token").
+            with(body: hash_including("code" => "supersecretcode", "p" => "someallowedvalue")).
+            to_return(status: 200, body: {
+            "id_token": @token,
+          }.to_json, headers: { "Content-Type" => "application/json" })
+
+          subject.options.use_userinfo = false
+        end
+
+        it "fetches auth token correctly, and uses it for user info" do
+          expect(subject.callback_phase[0]).to eq(200)
+          expect(subject.uid).to eq("someuserid")
+          expect(subject.info[:name]).to eq("My Auth Token Name")
+          expect(subject.info[:email]).to eq("tokenemail@example.com")
+        end
+
+        it "checks the nonce" do
+          subject.session["omniauth.nonce"] = "overriddenNonce"
+          expect(subject.callback_phase[0]).to eq(302)
+        end
+
+        it "checks the issuer" do
+          subject.options.client_id = "overriddenclientid"
+          expect(subject.callback_phase[0]).to eq(302)
+        end
+      end
+
+      context "with userinfo enabled" do
+        before do
+          stub_request(:post, "https://id.example.com/token").
+            with(body: hash_including("code" => "supersecretcode", "p" => "someallowedvalue")).
+            to_return(status: 200, body: {
+            "access_token": "AnAccessToken",
+            "expires_in": 3600,
+            "id_token": @token,
+          }.to_json, headers: { "Content-Type" => "application/json" })
+
+          stub_request(:get, "https://id.example.com/userinfo").
+            with(headers: { 'Authorization' => 'Bearer AnAccessToken' }).
+            to_return(status: 200, body: {
+              sub: "someuserid",
+              name: "My Userinfo Name",
+              email: "userinfoemail@example.com",
+            }.to_json, headers: { "Content-Type" => "application/json" })
+        end
+
+        it "fetches credentials and auth token correctly" do
+          expect(subject.callback_phase[0]).to eq(200)
+          expect(subject.uid).to eq("someuserid")
+          expect(subject.info[:name]).to eq("My Userinfo Name")
+          expect(subject.info[:email]).to eq("userinfoemail@example.com")
+        end
+      end
+    end
   end
 
 end
