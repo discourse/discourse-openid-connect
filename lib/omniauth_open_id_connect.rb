@@ -69,6 +69,15 @@ module ::OmniAuth
         end
       end
 
+      def token_params
+        params = {}
+        options[:passthrough_token_options].each do |k|
+          val = session.delete("omniauth.param.#{k}")
+          params[k] = val unless [nil, ''].include?(val)
+        end
+        super.merge(params)
+      end
+
       uid { id_token_info['sub'] }
 
       info do
@@ -138,15 +147,6 @@ module ::OmniAuth
 
       def callback_url
         full_host + script_name + callback_path
-      end
-
-      def token_params
-        params = {}
-        options[:passthrough_token_options].each do |k|
-          val = session.delete("omniauth.param.#{k}")
-          params[k] = val unless [nil, ''].include?(val)
-        end
-        super.merge(params)
       end
 
       def get_token_options

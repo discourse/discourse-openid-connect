@@ -101,6 +101,15 @@ describe OmniAuth::Strategies::OpenIDConnect do
       end
     end
 
+    describe "token parameters" do
+      it "passes through parameters from authorize phase" do
+        expect(subject.authorize_params[:p]).to eq("someallowedvalue")
+        allow(subject).to receive(:request) { double("Request", params: {}) }
+        expect(subject.token_params[:p]).to eq("someallowedvalue")
+      end
+
+    end
+
   end
 
 end
