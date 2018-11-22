@@ -1,5 +1,6 @@
 en:
   site_settings:
+    openid_connect_enabled: Enable OpenID Connect authentication. Customize user interface text <a href='%{base_path}/admin/customize/site_texts?q=js.login.oidc'>here</a>
     openid_connect_discovery_document: "OpenID Connect discovery document URL. Normally located at 'https://your.domain/.well-known/openid-configuration'"
     openid_connect_client_id: "OpenID Connect client ID"
     openid_connect_client_secret: "OpenID Connect client secret"

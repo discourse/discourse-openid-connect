@@ -1,4 +1,6 @@
 plugins:
+  openid_connect_enabled:
+    default: false
   openid_connect_discovery_document:
     default: ""
   openid_connect_client_id:

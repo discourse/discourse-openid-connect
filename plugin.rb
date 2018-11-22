@@ -14,10 +14,7 @@ class Auth::ManagedAuthenticator < Auth::Authenticator
 
   def after_authenticate(auth_token)
     # puts "after authenticate ", auth_token.to_json
-
     result = Auth::Result.new
-
-    result.authenticator_name = "OpenID Connect"
 
     result.extra_data = {
       provider: auth_token[:provider],
@@ -27,10 +24,10 @@ class Auth::ManagedAuthenticator < Auth::Authenticator
       credentials: auth_token[:credentials]
     }
 
-    data = auth_token[:info]
-    result.email = email = data[:email]
-    result.name = name = "#{data[:first_name]} #{data[:last_name]}"
-    result.username = data[:nickname]
+    info = auth_token[:info]
+    result.email = email = info[:email]
+    result.name = name = "#{info[:first_name]} #{info[:last_name]}"
+    result.username = info[:nickname]
 
     association = UserAssociatedAccount.find_by(provider_name: auth_token[:provider], provider_uid: auth_token[:uid])
 
@@ -64,7 +61,7 @@ class OpenIDConnectAuthenticator < Auth::ManagedAuthenticator
   end
 
   def enabled?
-    true
+    SiteSetting.openid_connect_enabled
   end
 
   def register_middleware(omniauth)
@@ -97,6 +94,5 @@ class OpenIDConnectAuthenticator < Auth::ManagedAuthenticator
   end
 end
 
-auth_provider title: 'with OpenID Connect',
-              authenticator: OpenIDConnectAuthenticator.new(),
+auth_provider authenticator: OpenIDConnectAuthenticator.new(),
               full_screen_login: true
