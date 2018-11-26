@@ -6,58 +6,20 @@
 
 require_relative "lib/omniauth_open_id_connect"
 require_relative 'app/models/user_associated_account'
-
-class Auth::ManagedAuthenticator < Auth::Authenticator
-  def match_by_email
-    true
-  end
-
-  def after_authenticate(auth_token)
-    # puts "after authenticate ", auth_token.to_json
-    result = Auth::Result.new
-
-    result.extra_data = {
-      provider: auth_token[:provider],
-      uid: auth_token[:uid],
-      info: auth_token[:info],
-      extra: auth_token[:extra],
-      credentials: auth_token[:credentials]
-    }
-
-    info = auth_token[:info]
-    result.email = email = info[:email]
-    result.name = name = "#{info[:first_name]} #{info[:last_name]}"
-    result.username = info[:nickname]
-
-    association = UserAssociatedAccount.find_by(provider_name: auth_token[:provider], provider_uid: auth_token[:uid])
-
-    if match_by_email && association.nil? && (user = User.find_by_email(email)) && !UserAssociatedAccount.exists?(user: user, provider_name: auth_token[:provider])
-      association = UserAssociatedAccount.create!(user: user, provider_name: auth_token[:provider], provider_uid: auth_token[:uid], info: auth_token[:info], credentials: auth_token[:credentials], extra: auth_token[:extra])
-    end
-
-    result.user = association&.user
-    result.email_valid = true
-
-    result
-  end
-
-  def after_create_account(user, auth)
-    data = auth[:extra_data]
-    association = UserAssociatedAccount.create!(
-      user: user,
-      provider_name: data[:provider],
-      provider_uid: data[:uid],
-      info: data[:info],
-      credentials: data[:credentials],
-      extra: data[:extra]
-    )
-  end
-end
+require_relative "lib/managed_authenticator"
 
 class OpenIDConnectAuthenticator < Auth::ManagedAuthenticator
 
   def name
     'oidc'
+  end
+
+  def can_revoke?
+    SiteSetting.openid_connect_allow_association_change
+  end
+
+  def can_connect_existing_user?
+    SiteSetting.openid_connect_allow_association_change
   end
 
   def enabled?

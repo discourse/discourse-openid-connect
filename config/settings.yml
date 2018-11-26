@@ -7,6 +7,8 @@ plugins:
     default: ""
   openid_connect_client_secret:
     default: ""
+  openid_connect_allow_association_change:
+    default: false
   openid_connect_authorize_scope:
     default: "openid"
   openid_connect_token_scope:
