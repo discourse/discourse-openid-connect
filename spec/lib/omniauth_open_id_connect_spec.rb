@@ -132,6 +132,15 @@ describe OmniAuth::Strategies::OpenIDConnect do
         @token = JWT.encode payload, nil, 'none'
       end
 
+      it "handles error redirects correctly" do
+        allow(subject).to receive(:request) do
+          double("Request", params: { "error" => true, "error_description" => "User forgot password" })
+        end
+        subject.options.error_handler = lambda { |error, message| return "https://example.com/error_redirect" if message.include?("forgot password") }
+        expect(subject.callback_phase[0]).to eq(302)
+        expect(subject.callback_phase[1]["Location"]).to eq("https://example.com/error_redirect")
+      end
+
       context "with userinfo disabled" do
         before do
           stub_request(:post, "https://id.example.com/token").
