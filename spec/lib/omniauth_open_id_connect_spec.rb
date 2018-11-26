@@ -1,9 +1,7 @@
 # frozen_string_literal: true
 
 require_relative '../../lib/omniauth_open_id_connect'
-
-require 'webmock/rspec'
-WebMock.disable_net_connect!
+require 'rails_helper'
 
 describe OmniAuth::Strategies::OpenIDConnect do
   # let(:request) { double('Request', params: {}, cookies: {}, env: {}) }
@@ -30,9 +28,6 @@ describe OmniAuth::Strategies::OpenIDConnect do
       }
 
     ).tap do |strategy|
-      # allow(strategy).to receive(:request) do
-      #   request
-      # end
     end
   end
 
@@ -73,9 +68,8 @@ describe OmniAuth::Strategies::OpenIDConnect do
           "userinfo_endpoint": "https://id.example.com/userinfo",
         }.to_json)
 
-      allow(subject).to receive(:request) do
-        double("Request", params: { "p" => "someallowedvalue", "somethingelse" => "notallowed" })
-      end
+      subject.stubs(:request).returns(mock('object'))
+      subject.request.stubs(:params).returns("p" => "someallowedvalue", "somethingelse" => "notallowed")
 
       subject.discover!
     end
@@ -104,7 +98,8 @@ describe OmniAuth::Strategies::OpenIDConnect do
     describe "token parameters" do
       it "passes through parameters from authorize phase" do
         expect(subject.authorize_params[:p]).to eq("someallowedvalue")
-        allow(subject).to receive(:request) { double("Request", params: {}) }
+        subject.stubs(:request).returns(mock())
+        subject.request.stubs(:params).returns({})
         expect(subject.token_params[:p]).to eq("someallowedvalue")
       end
     end
@@ -113,11 +108,10 @@ describe OmniAuth::Strategies::OpenIDConnect do
       before do
         auth_params = subject.authorize_params
 
-        allow(subject).to receive(:full_host).and_return("https://example.com")
+        subject.stubs(:full_host).returns("https://example.com")
 
-        allow(subject).to receive(:request) do
-          double("Request", params: { "state" => auth_params[:state], "code" => "supersecretcode" })
-        end
+        subject.stubs(:request).returns(mock())
+        subject.request.stubs(:params).returns("state" => auth_params[:state], "code" => "supersecretcode")
 
         payload = {
           iss: "https://id.example.com/",
@@ -133,9 +127,8 @@ describe OmniAuth::Strategies::OpenIDConnect do
       end
 
       it "handles error redirects correctly" do
-        allow(subject).to receive(:request) do
-          double("Request", params: { "error" => true, "error_description" => "User forgot password" })
-        end
+        subject.stubs(:request).returns(mock())
+        subject.request.stubs(:params).returns("error" => true, "error_description" => "User forgot password")
         subject.options.error_handler = lambda { |error, message| return "https://example.com/error_redirect" if message.include?("forgot password") }
         expect(subject.callback_phase[0]).to eq(302)
         expect(subject.callback_phase[1]["Location"]).to eq("https://example.com/error_redirect")
