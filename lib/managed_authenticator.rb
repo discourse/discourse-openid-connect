@@ -1,6 +1,7 @@
 class Auth::ManagedAuthenticator < Auth::Authenticator
   def description_for_user(user)
-    info = UserAssociatedAccount.find_by(provider_name: name, user_id: user.id).info
+    info = UserAssociatedAccount.find_by(provider_name: name, user_id: user.id)&.info
+    return "" if info.nil?
     info["name"] || info["email"] || info["nickname"] || ""
   end
 
