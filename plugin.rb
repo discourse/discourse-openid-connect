@@ -5,8 +5,6 @@
 # url: https://github.com/discourse/discourse-openid-connect
 
 require_relative "lib/omniauth_open_id_connect"
-require_relative 'app/models/user_associated_account'
-require_relative "lib/managed_authenticator"
 
 class OpenIDConnectAuthenticator < Auth::ManagedAuthenticator
 
