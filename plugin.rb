@@ -54,5 +54,10 @@ class OpenIDConnectAuthenticator < Auth::ManagedAuthenticator
   end
 end
 
-auth_provider authenticator: OpenIDConnectAuthenticator.new(),
-              full_screen_login: true
+# TODO: remove this check once Discourse 2.2 is released
+if Gem.loaded_specs['jwt'].version > Gem::Version.create('2.0')
+  auth_provider authenticator: OpenIDConnectAuthenticator.new(),
+                full_screen_login: true
+else
+  STDERR.puts "WARNING: discourse-openid-connect requires Discourse v2.2.0.beta7 or above. The plugin will not be loaded."
+end

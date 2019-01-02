@@ -104,18 +104,23 @@ module ::OmniAuth
         # Verify the claims in the JWT
         # The signature does not need to be verified because the
         # token was acquired via a direct server-server connection to the issuer
-        @id_token_info ||= JWT.decode(
-          access_token['id_token'], nil, false,
-            :verify_iss => true,
-            'iss' => options[:client_options][:site],
-            :verify_aud => true,
-            'aud' => options.client_id,
-            :verify_sub => false,
-            :verify_expiration => true,
-            :verify_not_before => true,
-            :verify_iat => true,
-            :verify_jti => false
-          ).first
+        @id_token_info ||= begin
+          decoded = JWT.decode(access_token['id_token'], nil, false).first
+
+          JWT::Verify.verify_claims(decoded,
+            verify_iss: true,
+            iss: options[:client_options][:site],
+            verify_aud: true,
+            aud: options.client_id,
+            verify_sub: false,
+            verify_expiration: true,
+            verify_not_before: true,
+            verify_iat: true,
+            verify_jti: false
+          )
+
+          decoded
+        end
       end
 
       def userinfo_response
