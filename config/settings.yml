@@ -11,6 +11,8 @@ plugins:
     default: false
   openid_connect_authorize_scope:
     default: "openid"
+  openid_connect_verbose_logging:
+    default: false
   openid_connect_token_scope:
     default: ""
   openid_connect_error_redirects:

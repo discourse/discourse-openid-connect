@@ -37,6 +37,10 @@ class OpenIDConnectAuthenticator < Auth::ManagedAuthenticator
         end
         nil
       },
+      verbose_logger: lambda { |message|
+        return unless SiteSetting.openid_connect_verbose_logging
+        Rails.logger.warn("OIDC Log: #{message}")
+      },
       setup: lambda { |env|
         opts = env['omniauth.strategy'].options
         opts.deep_merge!(
