@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 # name: discourse-openid-connect
 # about: Add support for openid-connect as a login provider
 # version: 1.0
