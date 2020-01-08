@@ -19,3 +19,7 @@ plugins:
     default: ''
     type: list
     list_type: secret
+  openid_connect_authorize_parameters:
+    default: ''
+    type: list
+    list_type: compact

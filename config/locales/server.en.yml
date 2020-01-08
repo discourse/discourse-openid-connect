@@ -9,3 +9,4 @@ en:
     openid_connect_error_redirects: "If the callback error_reason contains the first parameter, the user will be redirected to the URL in the second parameter"
     openid_connect_allow_association_change: "Allow users to disconnect and reconnect their Discourse accounts from the OpenID Connect provider"
     openid_connect_verbose_logging: "Log detailed openid-connect authentication information to `/logs`. Keep this disabled during normal use."
+    openid_connect_authorize_parameters: "URL parameters which will be included in the redirect from /auth/oidc to the IDP's authorize endpoint"

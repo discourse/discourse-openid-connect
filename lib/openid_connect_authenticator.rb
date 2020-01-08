@@ -50,7 +50,8 @@ class OpenIDConnectAuthenticator < Auth::ManagedAuthenticator
           scope: SiteSetting.openid_connect_authorize_scope,
           token_params: {
             scope: SiteSetting.openid_connect_token_scope,
-          }
+          },
+          passthrough_authorize_options: SiteSetting.openid_connect_authorize_parameters.split("|")
         )
       }
   end
