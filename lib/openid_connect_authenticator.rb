@@ -16,6 +16,12 @@ class OpenIDConnectAuthenticator < Auth::ManagedAuthenticator
     SiteSetting.openid_connect_enabled
   end
 
+  def primary_email_verified?(auth)
+    supplied_verified_boolean = auth['extra']['raw_info']['email_verified']
+    # If the payload includes the email_verified boolean, use it. Otherwise assume true
+    supplied_verified_boolean.nil? ? true : supplied_verified_boolean
+  end
+
   def register_middleware(omniauth)
 
     omniauth.provider :openid_connect,
