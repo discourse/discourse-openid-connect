@@ -22,6 +22,10 @@ class OpenIDConnectAuthenticator < Auth::ManagedAuthenticator
     supplied_verified_boolean.nil? ? true : supplied_verified_boolean
   end
 
+  def always_update_user_email?
+    SiteSetting.openid_connect_overrides_email
+  end
+
   def register_middleware(omniauth)
 
     omniauth.provider :openid_connect,

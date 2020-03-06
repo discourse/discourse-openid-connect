@@ -10,3 +10,4 @@ en:
     openid_connect_allow_association_change: "Allow users to disconnect and reconnect their Discourse accounts from the OpenID Connect provider"
     openid_connect_verbose_logging: "Log detailed openid-connect authentication information to `/logs`. Keep this disabled during normal use."
     openid_connect_authorize_parameters: "URL parameters which will be included in the redirect from /auth/oidc to the IDP's authorize endpoint"
+    openid_connect_overrides_email: "On every login, override the user's email using the openid-connect value"
