@@ -45,6 +45,10 @@ class OpenIDConnectAuthenticator < Auth::ManagedAuthenticator
       },
       setup: lambda { |env|
         opts = env['omniauth.strategy'].options
+
+        token_params = {}
+        token_params[:scope] = SiteSetting.openid_connect_token_scope if SiteSetting.openid_connect_token_scope.present?
+
         opts.deep_merge!(
           client_id: SiteSetting.openid_connect_client_id,
           client_secret: SiteSetting.openid_connect_client_secret,
@@ -52,9 +56,7 @@ class OpenIDConnectAuthenticator < Auth::ManagedAuthenticator
             discovery_document: SiteSetting.openid_connect_discovery_document,
           },
           scope: SiteSetting.openid_connect_authorize_scope,
-          token_params: {
-            scope: SiteSetting.openid_connect_token_scope,
-          },
+          token_params: token_params,
           passthrough_authorize_options: SiteSetting.openid_connect_authorize_parameters.split("|")
         )
       }
