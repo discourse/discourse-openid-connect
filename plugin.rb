@@ -9,5 +9,4 @@
 require_relative "lib/omniauth_open_id_connect"
 require_relative "lib/openid_connect_authenticator"
 
-auth_provider authenticator: OpenIDConnectAuthenticator.new(),
-              full_screen_login: true
+auth_provider authenticator: OpenIDConnectAuthenticator.new()
