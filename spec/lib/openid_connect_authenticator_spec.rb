@@ -37,11 +37,23 @@ describe OpenIDConnectAuthenticator do
       result = authenticator.after_authenticate(hash)
       expect(result.user).to eq(user)
     end
+
+    it 'matches the user as a true string' do
+      hash[:extra][:raw_info][:email_verified] = 'true'
+      result = authenticator.after_authenticate(hash)
+      expect(result.user).to eq(user)
+    end
   end
 
   context "when email_verified is false" do
     it 'does not match the user' do
       hash[:extra][:raw_info][:email_verified] = false
+      result = authenticator.after_authenticate(hash)
+      expect(result.user).to eq(nil)
+    end
+
+    it 'does not match the user as a false string' do
+      hash[:extra][:raw_info][:email_verified] = 'false'
       result = authenticator.after_authenticate(hash)
       expect(result.user).to eq(nil)
     end
