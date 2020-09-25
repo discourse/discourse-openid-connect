@@ -64,6 +64,17 @@ class OpenIDConnectAuthenticator < Auth::ManagedAuthenticator
           token_params: token_params,
           passthrough_authorize_options: SiteSetting.openid_connect_authorize_parameters.split("|")
         )
+
+        if SiteSetting.openid_connect_verbose_logging
+          opts[:client_options][:connection_build] = lambda { |builder|
+            builder.response :logger, Rails.logger, { bodies: true, formatter: OIDCFaradayFormatter }
+
+            # Default stack:
+            builder.request :url_encoded             # form-encode POST params
+            builder.adapter Faraday.default_adapter  # make requests with Net::HTTP
+          }
+        end
+
       }
   end
 end
