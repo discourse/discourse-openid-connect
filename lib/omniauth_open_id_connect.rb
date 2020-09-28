@@ -155,7 +155,7 @@ module ::OmniAuth
           first_name: data_source['given_name'],
           last_name: data_source['family_name'],
           nickname: data_source['preferred_username'],
-          picture: data_source['picture']
+          image: data_source['picture']
         )
       end
 
