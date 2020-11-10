@@ -105,7 +105,7 @@ module ::OmniAuth
           oauth2_callback_phase
         rescue ::OmniAuth::OpenIDConnect::DiscoveryError => e
           fail!(:openid_connect_discovery_error, e)
-        rescue JWT::DecodeError => e
+        rescue ::JWT::DecodeError => e
           fail!(:jwt_decode_failed, e)
         end
       end
@@ -115,9 +115,9 @@ module ::OmniAuth
         # The signature does not need to be verified because the
         # token was acquired via a direct server-server connection to the issuer
         @id_token_info ||= begin
-          decoded = JWT.decode(access_token['id_token'], nil, false).first
+          decoded = ::JWT.decode(access_token['id_token'], nil, false).first
           verbose_log("Loaded JWT\n\n#{decoded.to_yaml}")
-          JWT::Verify.verify_claims(decoded,
+          ::JWT::Verify.verify_claims(decoded,
             verify_iss: true,
             iss: options[:client_options][:site],
             verify_aud: true,
