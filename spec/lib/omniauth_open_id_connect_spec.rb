@@ -123,7 +123,7 @@ describe OmniAuth::Strategies::OpenIDConnect do
           name: "My Auth Token Name",
           email: "tokenemail@example.com"
         }
-        @token = JWT.encode payload, nil, 'none'
+        @token = ::JWT.encode payload, nil, 'none'
       end
 
       it "handles error redirects correctly" do
