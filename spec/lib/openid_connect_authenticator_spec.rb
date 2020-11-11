@@ -59,4 +59,57 @@ describe OpenIDConnectAuthenticator do
     end
   end
 
+  describe "discovery document fetching" do
+    let(:document_url) { SiteSetting.openid_connect_discovery_document = "https://id.example.com/.well-known/openid-configuration" }
+    let(:document) do
+      {
+        "issuer": "https://id.example.com/",
+        "authorization_endpoint": "https://id.example.com/authorize",
+        "token_endpoint": "https://id.example.com/token",
+        "userinfo_endpoint": "https://id.example.com/userinfo",
+      }.to_json
+    end
+    after { Discourse.cache.delete("openid-connect-discovery-#{document_url}") }
+
+    it "loads the document correctly" do
+      stub_request(:get, document_url).to_return(body: document)
+      expect(authenticator.discovery_document.keys).to contain_exactly(
+        "issuer",
+        "authorization_endpoint",
+        "token_endpoint",
+        "userinfo_endpoint"
+      )
+    end
+
+    it "handles a non-200 response" do
+      stub_request(:get, document_url).to_return(status: 404)
+      expect(authenticator.discovery_document).to eq(nil)
+    end
+
+    it "handles a network error" do
+      stub_request(:get, document_url).to_timeout
+      expect(authenticator.discovery_document).to eq(nil)
+    end
+
+    it "handles invalid json" do
+      stub_request(:get, document_url).to_return(body: "this is not the json you're looking for")
+      expect(authenticator.discovery_document).to eq(nil)
+    end
+
+    it "caches a success response" do
+      stub = stub_request(:get, document_url).to_return(body: document)
+      expect(authenticator.discovery_document).not_to eq(nil)
+      expect(authenticator.discovery_document).not_to eq(nil)
+      expect(stub).to have_been_requested.once
+    end
+
+    it "caches a failed response" do
+      stub = stub_request(:get, document_url).to_return(status: 404)
+      expect(authenticator.discovery_document).to eq(nil)
+      expect(authenticator.discovery_document).to eq(nil)
+      expect(stub).to have_been_requested.once
+    end
+
+  end
+
 end

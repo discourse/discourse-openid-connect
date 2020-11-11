@@ -11,15 +11,14 @@ module ::OmniAuth
     class OpenIDConnect < OmniAuth::Strategies::OAuth2
       option :scope, "openid"
       option :discovery, true
+      option :discovery_document, nil
       option :use_userinfo, true
-      option :cache, lambda { |key, &blk| blk.call } # Default no-op cache
       option :error_handler, lambda { |error, message| nil } # Default no-op handler
       option :verbose_logger, lambda { |message| nil } # Default no-op handler
       option :passthrough_authorize_options, [:p]
       option :passthrough_token_options, [:p]
 
       option :client_options,
-        discovery_document: nil,
         site: nil,
         authorize_url: nil,
         token_url: nil,
@@ -31,11 +30,8 @@ module ::OmniAuth
       end
 
       def discover!
-        verbose_log("Fetching discovery document from #{options[:client_options][:discovery_document]}")
-        discovery_document = options.cache.call("openid_discovery_#{options[:client_options][:discovery_document]}") do
-          client.request(:get, options[:client_options][:discovery_document], parse: :json).parsed
-        end
-        verbose_log("Discovery document loaded\n\n#{discovery_document.to_yaml}")
+        discovery_document = options[:discovery_document]
+        raise ::OmniAuth::OpenIDConnect::DiscoveryError.new("Discovery document is missing") if discovery_document.nil?
 
         discovery_params = {
           authorize_url: "authorization_endpoint",
@@ -44,7 +40,7 @@ module ::OmniAuth
         }
 
         discovery_params.each do |internal_key, external_key|
-          val = discovery_document[external_key].to_s
+          val = discovery_document[external_key]
           raise ::OmniAuth::OpenIDConnect::DiscoveryError.new("missing discovery parameter #{external_key}") if val.nil? || val.empty?
           options[:client_options][internal_key] = val
         end
@@ -57,7 +53,7 @@ module ::OmniAuth
         begin
           discover! if options[:discovery]
         rescue ::OmniAuth::OpenIDConnect::DiscoveryError => e
-          fail!(:openid_connect_discovery_error, e)
+          return fail!(:openid_connect_discovery_error, e)
         end
 
         super

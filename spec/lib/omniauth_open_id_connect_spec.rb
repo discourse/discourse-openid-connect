@@ -4,70 +4,47 @@ require_relative '../../lib/omniauth_open_id_connect'
 require 'rails_helper'
 
 describe OmniAuth::Strategies::OpenIDConnect do
-  # let(:request) { double('Request', params: {}, cookies: {}, env: {}) }
   let(:app) do
     lambda do |*args|
       [200, {}, ['Hello.']]
     end
   end
 
-  before do
-    stub_request(:get, "https://id.example.com/.well-known/openid-configuration").
-      to_return(status: 200, body: {
-          "issuer": "https://id.example.com/",
-          "authorization_endpoint": "https://id.example.com/authorize",
-          "token_endpoint": "https://id.example.com/token",
-          "userinfo_endpoint": "https://id.example.com/userinfo",
-        }.to_json)
+  let(:discovery_document) do
+    {
+      "issuer" => "https://id.example.com/",
+      "authorization_endpoint" => "https://id.example.com/authorize",
+      "token_endpoint" => "https://id.example.com/token",
+      "userinfo_endpoint" => "https://id.example.com/userinfo",
+    }
   end
 
   subject do
-    OmniAuth::Strategies::OpenIDConnect.new(app, 'appid', 'secret',
-      client_options: {
-        discovery_document: "https://id.example.com/.well-known/openid-configuration"
-      }
-
-    ).tap do |strategy|
-    end
+    OmniAuth::Strategies::OpenIDConnect.new(app, 'appid', 'secret', discovery_document: discovery_document)
   end
 
   before { OmniAuth.config.test_mode = true }
 
   after { OmniAuth.config.test_mode = false }
 
-  it "throws error for on invalid discovery document" do
-    stub_request(:get, "https://id.example.com/.well-known/openid-configuration").
-      to_return(status: 200, body: {
-        "issuer": "https://id.example.com/",
-        "token_endpoint": "https://id.example.com/token",
-        "userinfo_endpoint": "https://id.example.com/userinfo",
-      }.to_json)
+  it "throws error for missing discovery document" do
+    strategy = OmniAuth::Strategies::OpenIDConnect.new(app, 'appid', 'secret', discovery_document: nil)
+    expect { strategy.discover! }.to raise_error(::OmniAuth::OpenIDConnect::DiscoveryError)
+  end
 
+  it "throws error for invalid discovery document" do
+    discovery_document.delete("authorization_endpoint")
     expect { subject.discover! }.to raise_error(::OmniAuth::OpenIDConnect::DiscoveryError)
   end
 
   it "disables userinfo if not included in discovery document" do
-    stub_request(:get, "https://id.example.com/.well-known/openid-configuration").
-      to_return(status: 200, body: {
-        "issuer": "https://id.example.com/",
-        "authorization_endpoint": "https://id.example.com/authorize",
-        "token_endpoint": "https://id.example.com/token",
-      }.to_json)
-
+    discovery_document.delete("userinfo_endpoint")
     subject.discover!
     expect(subject.options.use_userinfo).to eq(false)
   end
 
-  context 'with valid discovery document' do
+  context 'with valid discovery document loaded' do
     before do
-      stub_request(:get, "https://id.example.com/.well-known/openid-configuration").
-        to_return(status: 200, body: {
-          "issuer": "https://id.example.com/",
-          "authorization_endpoint": "https://id.example.com/authorize",
-          "token_endpoint": "https://id.example.com/token",
-          "userinfo_endpoint": "https://id.example.com/userinfo",
-        }.to_json)
-
       subject.stubs(:request).returns(mock('object'))
       subject.request.stubs(:params).returns("p" => "someallowedvalue", "somethingelse" => "notallowed")
 
