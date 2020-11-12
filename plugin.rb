@@ -12,4 +12,33 @@ require_relative "lib/openid_connect_faraday_formatter"
 require_relative "lib/omniauth_open_id_connect"
 require_relative "lib/openid_connect_authenticator"
 
-auth_provider authenticator: OpenIDConnectAuthenticator.new()
+# RP-initiated logout
+# https://openid.net/specs/openid-connect-rpinitiated-1_0.html
+on(:before_session_destroy) do |data|
+  next if !SiteSetting.openid_connect_rp_initiated_logout
+
+  authenticator = OpenIDConnectAuthenticator.new
+
+  oidc_record = data[:user]&.user_associated_accounts&.find_by(provider_name: "oidc")
+  if !oidc_record
+    authenticator.oidc_log "Logout: No oidc user_associated_account record for user"
+    next
+  end
+
+  token = oidc_record.credentials["token"]
+  if !token
+    authenticator.oidc_log "Logout: No oidc token in user_associated_account record"
+    next
+  end
+
+  end_session_endpoint = authenticator.discovery_document["end_session_endpoint"].presence
+  if !end_session_endpoint
+    authenticator.oidc_log "Logout: No end_session_endpoint found in discovery document", error: true
+    next
+  end
+
+  authenticator.oidc_log "Logout: Redirecting user_id=#{data[:user].id} to end_session_endpoint"
+  data[:redirect_url] = "#{end_session_endpoint}?id_token_hint=#{token}"
+end
+
+auth_provider authenticator: OpenIDConnectAuthenticator.new
