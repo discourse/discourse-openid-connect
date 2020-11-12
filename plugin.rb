@@ -25,9 +25,9 @@ on(:before_session_destroy) do |data|
     next
   end
 
-  token = oidc_record.credentials["token"]
+  token = oidc_record.extra["id_token"]
   if !token
-    authenticator.oidc_log "Logout: No oidc token in user_associated_account record"
+    authenticator.oidc_log "Logout: No oidc id_token in user_associated_account record"
     next
   end
 

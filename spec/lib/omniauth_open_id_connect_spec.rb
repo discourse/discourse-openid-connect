@@ -127,6 +127,7 @@ describe OmniAuth::Strategies::OpenIDConnect do
           expect(subject.uid).to eq("someuserid")
           expect(subject.info[:name]).to eq("My Auth Token Name")
           expect(subject.info[:email]).to eq("tokenemail@example.com")
+          expect(subject.extra[:id_token]).to eq(@token)
         end
 
         it "checks the nonce" do
