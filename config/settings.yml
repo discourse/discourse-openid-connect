@@ -9,6 +9,8 @@ plugins:
     default: ""
   openid_connect_rp_initiated_logout: 
     default: false
+  openid_connect_rp_initiated_logout_redirect:
+    default: ""
   openid_connect_allow_association_change:
     default: false
   openid_connect_overrides_email:

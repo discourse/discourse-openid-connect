@@ -38,7 +38,14 @@ on(:before_session_destroy) do |data|
   end
 
   authenticator.oidc_log "Logout: Redirecting user_id=#{data[:user].id} to end_session_endpoint"
-  data[:redirect_url] = "#{end_session_endpoint}?id_token_hint=#{token}"
+
+  redirect_uri = end_session_endpoint
+  redirect_uri += "?id_token_hint=#{token}"
+
+  post_logout_redirect = SiteSetting.openid_connect_rp_initiated_logout_redirect.presence
+  redirect_uri += "&post_logout_redirect_uri=#{post_logout_redirect}" if post_logout_redirect
+
+  data[:redirect_url] = redirect_uri
 end
 
 auth_provider authenticator: OpenIDConnectAuthenticator.new
