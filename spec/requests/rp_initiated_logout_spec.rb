@@ -43,7 +43,7 @@ describe "OIDC RP-Initiated Logout" do
   context "with user and token" do
     before do
       sign_in(user)
-      UserAssociatedAccount.create!(provider_name: "oidc", user: user, provider_uid: "myuid", credentials: { token: "myoidctoken" })
+      UserAssociatedAccount.create!(provider_name: "oidc", user: user, provider_uid: "myuid", extra: { id_token: "myoidctoken" })
     end
 
     it "redirects the user to the logout endpoint" do
