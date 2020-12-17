@@ -57,12 +57,12 @@ class OpenIDConnectAuthenticator < Auth::ManagedAuthenticator
 
   def after_authenticate(auth_token, existing_account: nil)
     result = super
-	unless result.user.nil?
+    unless result.user.nil?
       groups = auth_token[:info][:groups]
       result[:extra_data][:groups] = groups
       handle_groups(result.user, groups)
-	end
-	result
+    end
+    result
   end
 
   def after_create_account(user, auth)
@@ -85,7 +85,7 @@ class OpenIDConnectAuthenticator < Auth::ManagedAuthenticator
         next unless SiteSetting.openid_connect_create_groups
         oidc_log("creating group #{group_name} and adding user #{user.username}")
         user.groups << Group.create(name: group_name)
-	  elsif 'staff' == group.name
+      elsif 'staff' == group.name
         oidc_log("skipping reserved staff group for user #{user.username}")
         next # Skip staff, which is not actually a group but a reserved role name.
       elsif not user.groups.include(group)
@@ -94,7 +94,7 @@ class OpenIDConnectAuthenticator < Auth::ManagedAuthenticator
       end
     end
     user.groups.each do |group|
-      next if group.name == 'staff' or groups.include?(group.name)
+      next if group.name == 'staff' || groups.include?(group.name)
       oidc_log("group #{group.name} not in OIDC-supplied groups of user #{user.username}; deleting")
       user.groups.delete(group)
     end if SiteSetting.openid_connect_strict_groups
