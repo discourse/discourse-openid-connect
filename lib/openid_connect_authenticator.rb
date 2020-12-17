@@ -55,6 +55,51 @@ class OpenIDConnectAuthenticator < Auth::ManagedAuthenticator
     result
   end
 
+  def after_authenticate(auth_token, existing_account: nil)
+    result = super
+	unless result.user.nil?
+      groups = auth_token[:info][:groups]
+      result[:extra_data][:groups] = groups
+      handle_groups(result.user, groups)
+	end
+	result
+  end
+
+  def after_create_account(user, auth)
+    super
+    handle_groups(user, auth[:extra_data][:groups])
+  end
+
+  def handle_groups(user, groups)
+    if not SiteSetting.openid_connect_handle_groups
+      oidc_log("not handling groups")
+      return
+    end
+    if groups.nil?
+      oidc_log("no groups to add - check that your IdP is configured to return them")
+      return
+    end
+    groups.each do |group_name|
+      group = Group.find_by(name: group_name)
+      if group.nil?
+        next unless SiteSetting.openid_connect_create_groups
+        oidc_log("creating group #{group_name} and adding user #{user.username}")
+        user.groups << Group.create(name: group_name)
+	  elsif 'staff' == group.name
+        oidc_log("skipping reserved staff group for user #{user.username}")
+        next # Skip staff, which is not actually a group but a reserved role name.
+      elsif not user.groups.include(group)
+        oidc_log("adding user #{user.username} to group #{group_name}")
+        user.groups << group
+      end
+    end
+    user.groups.each do |group|
+      next if group.name == 'staff' or groups.include?(group.name)
+      oidc_log("group #{group.name} not in OIDC-supplied groups of user #{user.username}; deleting")
+      user.groups.delete(group)
+    end if SiteSetting.openid_connect_strict_groups
+  end
+
   def oidc_log(message, error: false)
     if error
       Rails.logger.error("OIDC Log: #{message}")
