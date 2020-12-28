@@ -78,7 +78,7 @@ class OpenIDConnectAuthenticator < Auth::ManagedAuthenticator
     
     group_membership_claim_map.each do |gmc|
       if value = association.info[gmc.claim]
-        is_member = value == true ||
+        is_member = [true, "true", "t"].include?(value) ||
           value == gmc.group.name ||
           value.is_a(String) && value.split(',').include?(gmc.group.name)
         
