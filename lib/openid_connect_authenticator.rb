@@ -57,47 +57,80 @@ class OpenIDConnectAuthenticator < Auth::ManagedAuthenticator
 
   def after_authenticate(auth_token, existing_account: nil)
     result = super
-    unless result.user.nil?
-      groups = auth_token[:info][:groups]
-      result[:extra_data][:groups] = groups
-      handle_groups(result.user, groups)
-    end
+    handle_group_memberships(result.user, auth_token)) if result.user
     result
   end
 
   def after_create_account(user, auth)
     super
-    handle_groups(user, auth[:extra_data][:groups])
+    handle_group_memberships(user, auth[:extra_data])
   end
 
-  def handle_groups(user, groups)
-    if not SiteSetting.openid_connect_handle_groups
-      oidc_log("not handling groups")
-      return
-    end
-    if groups.nil?
-      oidc_log("no groups to add - check that your IdP is configured to return them")
-      return
-    end
-    groups.each do |group_name|
-      group = Group.find_by(name: group_name)
-      if group.nil?
-        next unless SiteSetting.openid_connect_create_groups
-        oidc_log("creating group #{group_name} and adding user #{user.username}")
-        user.groups << Group.create(name: group_name)
-      elsif 'staff' == group.name
-        oidc_log("skipping reserved staff group for user #{user.username}")
-        next # Skip staff, which is not actually a group but a reserved role name.
-      elsif not user.groups.include(group)
-        oidc_log("adding user #{user.username} to group #{group_name}")
-        user.groups << group
+  def handle_group_memberships(user, auth_token)
+    association = UserAssociatedAccount.find_or_initialize_by(
+      provider_name: auth_token[:provider],
+      provider_uid: auth_token[:uid]
+    )
+    return unless association && association.info
+    
+    added = []
+    removed = []
+    
+    group_membership_claim_map.each do |gmc|
+      if value = association.info[gmc.claim]
+        is_member = value == true ||
+          value == gmc.group.name ||
+          value.is_a(String) && value.split(',').include?(gmc.group.name)
+        
+        if is_member && gmc.group.users.exclude?(user)
+          gmc.group.add(user)
+          added.push(gmc.group.name)
+        end
+        
+        if !is_member && gm.group.users.include?(user) && gmc.modifiers.include?(:strict)
+          gmc.group.remove(user)
+          removed.push(gmc.group.name)
+        end
       end
     end
-    user.groups.each do |group|
-      next if group.name == 'staff' || groups.include?(group.name)
-      oidc_log("group #{group.name} not in OIDC-supplied groups of user #{user.username}; deleting")
-      user.groups.delete(group)
-    end if SiteSetting.openid_connect_strict_groups
+    
+    if added.any?
+      oidc_log("added #{user.username} to groups: #{added.join(', ')}")
+    end
+    
+    if removed.any?
+      oidc_log("removed #{user.username} from groups: #{removed.join(', ')}")
+    end
+  end
+  
+  def group_membership_claim_map
+    setting_list = SiteSetting.openid_connect_group_membership_claims.split('|')
+    
+    claims = {}
+    setting_list.each do |result, setting|
+      parts = setting.split('~~')
+      claims[parts.second] = [parts.first, parts.last.split(',')]
+    end
+    
+    Group.where(name: claims.keys, automatic: false).map do |group|
+      OpenStruct.new(
+        claim: claims[group.name].first,
+        modifiers: validate_group_modifiers(claims[group.name].last),
+        group: group
+      )
+    end
+  end
+  
+  def validate_group_modifiers(modifers)
+    modifier_map = {
+      s: "strict"
+    }
+    modifers.reduce do |result, modifier|
+      if mod_name = modifier_map[modifier]
+        result.push(mod_name.to_sym)
+      end
+      result
+    end
   end
 
   def oidc_log(message, error: false)

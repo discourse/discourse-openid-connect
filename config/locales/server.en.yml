@@ -13,6 +13,7 @@ en:
     openid_connect_verbose_logging: "Log detailed openid-connect authentication information to `/logs`. Keep this disabled during normal use."
     openid_connect_authorize_parameters: "URL parameters which will be included in the redirect from /auth/oidc to the IDP's authorize endpoint"
     openid_connect_overrides_email: "On every login, override the user's email using the openid-connect value"
+    openid_connect_group_membership_claims: "Auth token claims with group names for a user's group memberships. Format ``name:{modifiers}``."  
   login:
     omniauth_error:
       openid_connect_discovery_error: Unable to fetch configuration from identity provider. Please try again.
