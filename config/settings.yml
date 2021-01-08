@@ -29,9 +29,6 @@ plugins:
     default: ''
     type: list
     list_type: compact
-  openid_connect_handle_groups:
-    default: false
-  openid_connect_create_groups:
-    default: true
-  openid_connect_strict_groups:
-    default: true
+  openid_connect_group_membership_claims:
+    default: ''
+    type: list

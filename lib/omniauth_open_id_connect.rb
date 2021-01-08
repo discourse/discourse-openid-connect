@@ -152,7 +152,7 @@ module ::OmniAuth
           last_name: data_source['family_name'],
           nickname: data_source['preferred_username'],
           image: data_source['picture'],
-          groups: data_source['groups']
+          **group_membership_claims(data_source)
         )
       end
 
@@ -192,7 +192,15 @@ module ::OmniAuth
         response = client.request(:post, options[:client_options][:token_url], body: get_token_options)
         ::OAuth2::AccessToken.from_hash(client, response.parsed)
       end
-
+      
+      def group_membership_claims(data_source)
+        claims = {}
+        SiteSetting.openid_connect_group_membership_claims.split('|').each do |setting|
+          name = setting.rpartition('~~').first
+          claims[name.to_sym] = data_source[name]
+        end
+        claims
+      end
     end
   end
 end
