@@ -55,6 +55,84 @@ class OpenIDConnectAuthenticator < Auth::ManagedAuthenticator
     result
   end
 
+  def after_authenticate(auth_token, existing_account: nil)
+    result = super
+    handle_group_memberships(result.user, auth_token)) if result.user
+    result
+  end
+
+  def after_create_account(user, auth)
+    super
+    handle_group_memberships(user, auth[:extra_data])
+  end
+
+  def handle_group_memberships(user, auth_token)
+    association = UserAssociatedAccount.find_or_initialize_by(
+      provider_name: auth_token[:provider],
+      provider_uid: auth_token[:uid]
+    )
+    return unless association && association.info
+    
+    added = []
+    removed = []
+    
+    group_membership_claim_map.each do |gmc|
+      if value = association.info[gmc.claim]
+        is_member = [true, "true", "t"].include?(value) ||
+          value == gmc.group.name ||
+          value.is_a(String) && value.split(',').include?(gmc.group.name)
+        
+        if is_member && gmc.group.users.exclude?(user)
+          gmc.group.add(user)
+          added.push(gmc.group.name)
+        end
+        
+        if !is_member && gm.group.users.include?(user) && gmc.modifiers.include?(:strict)
+          gmc.group.remove(user)
+          removed.push(gmc.group.name)
+        end
+      end
+    end
+    
+    if added.any?
+      oidc_log("added #{user.username} to groups: #{added.join(', ')}")
+    end
+    
+    if removed.any?
+      oidc_log("removed #{user.username} from groups: #{removed.join(', ')}")
+    end
+  end
+  
+  def group_membership_claim_map
+    setting_list = SiteSetting.openid_connect_group_membership_claims.split('|')
+    
+    claims = {}
+    setting_list.each do |result, setting|
+      parts = setting.split('~~')
+      claims[parts.second] = [parts.first, parts.last.split(',')]
+    end
+    
+    Group.where(name: claims.keys, automatic: false).map do |group|
+      OpenStruct.new(
+        claim: claims[group.name].first,
+        modifiers: validate_group_modifiers(claims[group.name].last),
+        group: group
+      )
+    end
+  end
+  
+  def validate_group_modifiers(modifers)
+    modifier_map = {
+      s: "strict"
+    }
+    modifers.reduce do |result, modifier|
+      if mod_name = modifier_map[modifier]
+        result.push(mod_name.to_sym)
+      end
+      result
+    end
+  end
+
   def oidc_log(message, error: false)
     if error
       Rails.logger.error("OIDC Log: #{message}")

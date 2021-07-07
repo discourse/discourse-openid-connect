@@ -11,7 +11,8 @@ describe OpenIDConnectAuthenticator do
     uid: "123456789",
     info: {
         name: "John Doe",
-        email: user.email
+        email: user.email,
+        groups: ['staff', 'losers']
     },
     extra: {
       raw_info: {
