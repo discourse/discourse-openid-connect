@@ -9,6 +9,8 @@ module ::OmniAuth
 
   module Strategies
     class OpenIDConnect < OmniAuth::Strategies::OAuth2
+      class NonceVerifyError < StandardError; end
+
       option :scope, "openid"
       option :discovery, true
       option :discovery_document, nil
@@ -95,14 +97,13 @@ module ::OmniAuth
           oauth2_callback_phase = super
           return oauth2_callback_phase if env['omniauth.error']
 
-          if id_token_info["nonce"].nil? || id_token_info["nonce"].empty? || id_token_info["nonce"] != session.delete("omniauth.nonce")
-            return fail!(:csrf_detected, CallbackError.new(:csrf_detected, "CSRF detected"))
-          end
           oauth2_callback_phase
         rescue ::OmniAuth::OpenIDConnect::DiscoveryError => e
           fail!(:openid_connect_discovery_error, e)
         rescue ::JWT::DecodeError => e
           fail!(:jwt_decode_failed, e)
+        rescue NonceVerifyError => e
+          fail!(:jwt_nonce_verify_failed, e)
         end
       end
 
@@ -124,6 +125,11 @@ module ::OmniAuth
             verify_iat: false,
             verify_jti: false
           )
+
+          if decoded["nonce"].nil? || decoded["nonce"].empty? || decoded["nonce"] != session.delete("omniauth.nonce")
+            raise NonceVerifyError.new "JWT nonce is missing, or does not match"
+          end
+
           verbose_log("Verified JWT\n\n#{decoded.to_yaml}")
 
           decoded
