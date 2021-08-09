@@ -5,7 +5,9 @@ require 'rails_helper'
 
 describe OmniAuth::Strategies::OpenIDConnect do
   let(:app) do
+    @app_called = false
     lambda do |*args|
+      @app_called = true
       [200, {}, ['Hello.']]
     end
   end
@@ -109,6 +111,7 @@ describe OmniAuth::Strategies::OpenIDConnect do
         subject.options.error_handler = lambda { |error, message| return "https://example.com/error_redirect" if message.include?("forgot password") }
         expect(subject.callback_phase[0]).to eq(302)
         expect(subject.callback_phase[1]["Location"]).to eq("https://example.com/error_redirect")
+        expect(@app_called).to eq(false)
       end
 
       context "with userinfo disabled" do
@@ -128,16 +131,19 @@ describe OmniAuth::Strategies::OpenIDConnect do
           expect(subject.info[:name]).to eq("My Auth Token Name")
           expect(subject.info[:email]).to eq("tokenemail@example.com")
           expect(subject.extra[:id_token]).to eq(@token)
+          expect(@app_called).to eq(true)
         end
 
         it "checks the nonce" do
           subject.session["omniauth.nonce"] = "overriddenNonce"
           expect(subject.callback_phase[0]).to eq(302)
+          expect(@app_called).to eq(false)
         end
 
         it "checks the issuer" do
           subject.options.client_id = "overriddenclientid"
           expect(subject.callback_phase[0]).to eq(302)
+          expect(@app_called).to eq(false)
         end
       end
 
@@ -165,6 +171,7 @@ describe OmniAuth::Strategies::OpenIDConnect do
           expect(subject.uid).to eq("someuserid")
           expect(subject.info[:name]).to eq("My Userinfo Name")
           expect(subject.info[:email]).to eq("userinfoemail@example.com")
+          expect(@app_called).to eq(true)
         end
       end
     end
