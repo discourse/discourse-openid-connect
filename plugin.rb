@@ -37,15 +37,23 @@ on(:before_session_destroy) do |data|
     next
   end
 
+  begin
+    uri = URI.parse(end_session_endpoint)
+  rescue URI::Error
+    authenticator.oidc_log "Logout: unable to parse end_session_endpoint #{end_session_endpoint}", error: true
+  end
+
   authenticator.oidc_log "Logout: Redirecting user_id=#{data[:user].id} to end_session_endpoint"
 
-  redirect_uri = end_session_endpoint
-  redirect_uri += "?id_token_hint=#{token}"
+  params = URI.decode_www_form(String(uri.query))
+
+  params << ["id_token_hint", token]
 
   post_logout_redirect = SiteSetting.openid_connect_rp_initiated_logout_redirect.presence
-  redirect_uri += "&post_logout_redirect_uri=#{post_logout_redirect}" if post_logout_redirect
+  params << ["post_logout_redirect_uri", post_logout_redirect] if post_logout_redirect
 
-  data[:redirect_url] = redirect_uri
+  uri.query = URI.encode_www_form(params)
+  data[:redirect_url] = uri.to_s
 end
 
 auth_provider authenticator: OpenIDConnectAuthenticator.new
