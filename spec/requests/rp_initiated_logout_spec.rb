@@ -11,14 +11,14 @@ describe "OIDC RP-Initiated Logout" do
       "token_endpoint": "https://id.example.com/token",
       "userinfo_endpoint": "https://id.example.com/userinfo",
       "end_session_endpoint": "https://id.example.com/endsession",
-    }.to_json
+    }
   end
   let(:user) { Fabricate(:user) }
 
   before do
     SiteSetting.openid_connect_enabled = true
     SiteSetting.openid_connect_rp_initiated_logout = true
-    stub_request(:get, document_url).to_return(body: document)
+    stub_request(:get, document_url).to_return(body: lambda { |r| document.to_json })
   end
 
   after do
@@ -52,11 +52,19 @@ describe "OIDC RP-Initiated Logout" do
       expect(response.parsed_body["redirect_url"]).to eq("https://id.example.com/endsession?id_token_hint=myoidctoken")
     end
 
+    it "correctly handles logout urls with existing query params" do
+      document[:end_session_endpoint] += "?param=true"
+
+      delete "/session/#{user.username}", xhr: true
+      expect(response.status).to eq(200)
+      expect(response.parsed_body["redirect_url"]).to eq("https://id.example.com/endsession?param=true&id_token_hint=myoidctoken")
+    end
+
     it "includes the redirect URI if set" do
       SiteSetting.openid_connect_rp_initiated_logout_redirect = "https://example.com"
       delete "/session/#{user.username}", xhr: true
       expect(response.status).to eq(200)
-      expect(response.parsed_body["redirect_url"]).to eq("https://id.example.com/endsession?id_token_hint=myoidctoken&post_logout_redirect_uri=https://example.com")
+      expect(response.parsed_body["redirect_url"]).to eq("https://id.example.com/endsession?id_token_hint=myoidctoken&post_logout_redirect_uri=https%3A%2F%2Fexample.com")
     end
 
     it "does not redirect if plugin disabled" do
