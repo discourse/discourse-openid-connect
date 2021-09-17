@@ -45,14 +45,14 @@ on(:before_session_destroy) do |data|
 
   authenticator.oidc_log "Logout: Redirecting user_id=#{data[:user].id} to end_session_endpoint"
 
-  params = Rack::Utils.parse_nested_query(String(uri.query))
+  params = URI.decode_www_form(String(uri.query))
 
-  params["id_token_hint"] = token
+  params << ["id_token_hint", token]
 
   post_logout_redirect = SiteSetting.openid_connect_rp_initiated_logout_redirect.presence
-  params["post_logout_redirect_uri"] = post_logout_redirect if post_logout_redirect
+  params << ["post_logout_redirect_uri", post_logout_redirect] if post_logout_redirect
 
-  uri.query = params.to_query
+  uri.query = URI.encode_www_form(params)
   data[:redirect_url] = uri.to_s
 end
 
