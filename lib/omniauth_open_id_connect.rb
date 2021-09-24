@@ -51,8 +51,7 @@ module ::OmniAuth
         userinfo_endpoint = options[:client_options][:userinfo_endpoint] = discovery_document["userinfo_endpoint"].to_s
         options.use_userinfo = false if userinfo_endpoint.nil? || userinfo_endpoint.empty?
         
-        if discovery_document["token_endpoint_auth_methods_supported"] && !discovery_document["token_endpoint_auth_methods_supported"].include?("client_secret_basic")
-          verbose_log("Token endpoint does not support basic auth, reverting to POST")
+        if discovery_document["token_endpoint_auth_methods_supported"] && !discovery_document["token_endpoint_auth_methods_supported"].include?("client_secret_basic") && discovery_document["token_endpoint_auth_methods_supported"].include?("client_secret_post")
           options[:client_options][:auth_scheme] = :request_body
         end
       end
