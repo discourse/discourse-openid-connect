@@ -25,7 +25,7 @@ module ::OmniAuth
         authorize_url: nil,
         token_url: nil,
         userinfo_endpoint: nil,
-        auth_scheme: :basic_auth
+        auth_scheme: :request_body
 
       def verbose_log(message)
         options.verbose_logger.call(message)
