@@ -29,4 +29,5 @@ plugins:
     default: ''
     type: list
     list_type: compact
-  
+  openid_connect_claims:
+    default: ''

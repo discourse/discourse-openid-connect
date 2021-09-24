@@ -19,13 +19,14 @@ module ::OmniAuth
       option :verbose_logger, lambda { |message| nil } # Default no-op handler
       option :passthrough_authorize_options, [:p]
       option :passthrough_token_options, [:p]
+      option :claims, nil
 
       option :client_options,
         site: nil,
         authorize_url: nil,
         token_url: nil,
         userinfo_endpoint: nil,
-        auth_scheme: :request_body
+        auth_scheme: :basic_auth
 
       def verbose_log(message)
         options.verbose_logger.call(message)
@@ -49,6 +50,11 @@ module ::OmniAuth
 
         userinfo_endpoint = options[:client_options][:userinfo_endpoint] = discovery_document["userinfo_endpoint"].to_s
         options.use_userinfo = false if userinfo_endpoint.nil? || userinfo_endpoint.empty?
+        
+        if discovery_document["token_endpoint_auth_methods_supported"] && !discovery_document["token_endpoint_auth_methods_supported"].include?("client_secret_basic")
+          verbose_log("Token endpoint does not support basic auth, reverting to POST")
+          options[:client_options][:auth_scheme] = :request_body
+        end
       end
 
       def request_phase
@@ -65,6 +71,10 @@ module ::OmniAuth
         super.tap do |params|
           options[:passthrough_authorize_options].each do |k|
             params[k] = request.params[k.to_s] unless [nil, ''].include?(request.params[k.to_s])
+          end
+
+          if options[:claims] 
+            params[:claims] = options[:claims]
           end
 
           params[:scope] = options[:scope]
