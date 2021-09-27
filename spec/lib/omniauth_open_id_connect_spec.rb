@@ -51,13 +51,13 @@ describe OmniAuth::Strategies::OpenIDConnect do
   end
 
   it "uses basic authentication when both client_secret_basic and client_secret_post are provided" do
-    discovery_document.merge!({"token_endpoint_auth_methods_supported" => ["client_secret_basic", "client_secret_post"]})
+    discovery_document.merge!({ "token_endpoint_auth_methods_supported" => ["client_secret_basic", "client_secret_post"] })
     subject.discover!
     expect(subject.options.client_options.auth_scheme).to eq(:basic_auth)
   end
 
   it "uses request_body authentication when client_secret_post is provided only" do
-    discovery_document.merge!({"token_endpoint_auth_methods_supported" => ["client_secret_post"]})
+    discovery_document.merge!({ "token_endpoint_auth_methods_supported" => ["client_secret_post"] })
     subject.discover!
     expect(subject.options.client_options.auth_scheme).to eq(:request_body)
   end
@@ -90,7 +90,7 @@ describe OmniAuth::Strategies::OpenIDConnect do
         expect(subject.session['omniauth.nonce']).to eq(nonce)
       end
 
-      it "passes claims through to authorize endpoint" do 
+      it "passes claims through to authorize endpoint" do
         expect(subject.authorize_params[:claims]).to eq('{"userinfo":{"email":null,"email_verified":null}')
       end
     end
