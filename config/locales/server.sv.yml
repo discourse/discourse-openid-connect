@@ -1,0 +1,9 @@
+# WARNING: Never edit this file.
+# It will be overwritten when translations are pulled from Crowdin.
+#
+# To work with us on translations, join this project:
+# https://translate.discourse.org/
+
+sv:
+  site_settings:
+    openid_connect_enabled: Aktivera OpenID Connect-autentisering. Anpassa användargränssnittets text <a href='%{base_path}/admin/customize/site_texts?q=js.login.oidc'>här</a>
