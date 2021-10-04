@@ -31,3 +31,4 @@ plugins:
     list_type: compact
   openid_connect_claims:
     default: ''
+    textarea: true
