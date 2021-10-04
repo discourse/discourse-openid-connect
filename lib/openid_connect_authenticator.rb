@@ -88,7 +88,8 @@ class OpenIDConnectAuthenticator < Auth::ManagedAuthenticator
           discovery_document: discovery_document,
           scope: SiteSetting.openid_connect_authorize_scope,
           token_params: token_params,
-          passthrough_authorize_options: SiteSetting.openid_connect_authorize_parameters.split("|")
+          passthrough_authorize_options: SiteSetting.openid_connect_authorize_parameters.split("|"),
+          claims: SiteSetting.openid_connect_claims
         )
 
         if SiteSetting.openid_connect_verbose_logging
