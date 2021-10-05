@@ -5,3 +5,5 @@
 # https://translate.discourse.org/
 
 he:
+  site_settings:
+    openid_connect_enabled: הפעלת אימות דרך OpenID Connect. ניתן לערוך את טקסט מנשק המשתמש <a href='%{base_path}/admin/customize/site_texts?q=js.login.oidc'>כאן</a>.

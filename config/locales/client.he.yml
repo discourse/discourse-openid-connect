@@ -5,3 +5,9 @@
 # https://translate.discourse.org/
 
 he:
+  js:
+    login:
+      oidc:
+        name: "OpenID Connect"
+        title: "עם OpenID Connect"
+        message: "אימות דרך OpenID Connect"
