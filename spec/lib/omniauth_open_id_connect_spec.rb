@@ -90,8 +90,13 @@ describe OmniAuth::Strategies::OpenIDConnect do
         expect(subject.session['omniauth.nonce']).to eq(nonce)
       end
 
-      it "passes claims through to authorize endpoint" do
+      it "passes claims through to authorize endpoint if present" do
         expect(subject.authorize_params[:claims]).to eq('{"userinfo":{"email":null,"email_verified":null}')
+      end
+
+      it "does not pass claims if empty string" do
+        subject.options.claims = ""
+        expect(subject.authorize_params[:claims]).to eq(nil)
       end
     end
 
