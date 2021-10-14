@@ -72,7 +72,7 @@ module ::OmniAuth
             params[k] = request.params[k.to_s] unless [nil, ''].include?(request.params[k.to_s])
           end
 
-          if options[:claims]
+          if options[:claims].present?
             params[:claims] = options[:claims]
           end
 
