@@ -5,3 +5,5 @@
 # https://translate.discourse.org/
 
 ru:
+  site_settings:
+    openid_connect_overrides_email: "Заменять электронную почту пользователя значением openid-connect при каждом входе в систему. Работает так же, как параметр `auth_overrides_email`, но только при входе в систему через OpenID Connect."
