@@ -5,3 +5,9 @@
 # https://translate.discourse.org/
 
 zh_CN:
+  js:
+    login:
+      oidc:
+        name: "OpenID Connect"
+        title: "使用 OpenID Connect"
+        message: "正在使用 OpenID Connect 进行身份验证"
