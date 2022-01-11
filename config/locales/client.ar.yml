@@ -5,3 +5,9 @@
 # https://translate.discourse.org/
 
 ar:
+  js:
+    login:
+      oidc:
+        name: "OpenID Connect"
+        title: "باستخدام OpenID Connect"
+        message: "المصادقة باستخدام OpenID Connect"
