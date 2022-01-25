@@ -5,3 +5,9 @@
 # https://translate.discourse.org/
 
 fi:
+  js:
+    login:
+      oidc:
+        name: "OpenID Connect"
+        title: "OpenID Connectilla"
+        message: "Todennus OpenID Connectilla"
