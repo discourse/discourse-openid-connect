@@ -5,3 +5,9 @@
 # https://translate.discourse.org/
 
 pt_BR:
+  js:
+    login:
+      oidc:
+        name: "OpenID Connect"
+        title: "com OpenID Connect"
+        message: "Autenticação com OpenID Connect"

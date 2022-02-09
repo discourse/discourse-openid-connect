@@ -5,3 +5,9 @@
 # https://translate.discourse.org/
 
 ja:
+  js:
+    login:
+      oidc:
+        name: "OpenID Connect"
+        title: "OpenID Connect"
+        message: "OpenID Connect で認証"
