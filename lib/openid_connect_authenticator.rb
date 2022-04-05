@@ -1,4 +1,5 @@
 # frozen_string_literal: true
+
 class OpenIDConnectAuthenticator < Auth::ManagedAuthenticator
   def name
     'oidc'
@@ -64,7 +65,6 @@ class OpenIDConnectAuthenticator < Auth::ManagedAuthenticator
   end
 
   def register_middleware(omniauth)
-
     omniauth.provider :openid_connect,
       name: :oidc,
       error_handler: lambda { |error, message|

@@ -13,7 +13,7 @@ describe "OIDC RP-Initiated Logout" do
       "end_session_endpoint": "https://id.example.com/endsession",
     }
   end
-  let(:user) { Fabricate(:user) }
+  fab!(:user) { Fabricate(:user) }
 
   before do
     SiteSetting.openid_connect_enabled = true
@@ -96,7 +96,5 @@ describe "OIDC RP-Initiated Logout" do
       expect(response.status).to eq(200)
       expect(response.parsed_body["redirect_url"]).to eq("/")
     end
-
   end
-
 end

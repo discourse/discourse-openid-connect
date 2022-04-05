@@ -5,6 +5,7 @@
 # version: 1.0
 # authors: David Taylor
 # url: https://github.com/discourse/discourse-openid-connect
+# transpile_js: true
 
 enabled_site_setting :openid_connect_enabled
 
