@@ -202,5 +202,4 @@ describe OmniAuth::Strategies::OpenIDConnect do
       end
     end
   end
-
 end

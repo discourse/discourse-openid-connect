@@ -7,7 +7,7 @@ plugins:
     default: ""
   openid_connect_client_secret:
     default: ""
-  openid_connect_rp_initiated_logout: 
+  openid_connect_rp_initiated_logout:
     default: false
   openid_connect_rp_initiated_logout_redirect:
     default: ""
@@ -22,13 +22,13 @@ plugins:
   openid_connect_token_scope:
     default: ""
   openid_connect_error_redirects:
-    default: ''
+    default: ""
     type: list
     list_type: secret
   openid_connect_authorize_parameters:
-    default: ''
+    default: ""
     type: list
     list_type: compact
   openid_connect_claims:
-    default: ''
+    default: ""
     textarea: true

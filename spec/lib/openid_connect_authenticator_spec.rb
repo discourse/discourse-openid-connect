@@ -5,21 +5,23 @@ require_relative '../../lib/omniauth_open_id_connect'
 
 describe OpenIDConnectAuthenticator do
   let(:authenticator) { described_class.new }
-  let(:user) { Fabricate(:user) }
-  let(:hash) { OmniAuth::AuthHash.new(
-    provider: "oidc",
-    uid: "123456789",
-    info: {
-        name: "John Doe",
-        email: user.email
-    },
-    extra: {
-      raw_info: {
-        email: user.email,
-        name: "John Doe"
+  fab!(:user) { Fabricate(:user) }
+  let(:hash) do
+    OmniAuth::AuthHash.new(
+      provider: "oidc",
+      uid: "123456789",
+      info: {
+          name: "John Doe",
+          email: user.email
+      },
+      extra: {
+        raw_info: {
+          email: user.email,
+          name: "John Doe"
+        }
       }
-    }
-  )}
+    )
+  end
 
   context "when email_verified is not supplied" do
     # Some IDPs do not supply this information
@@ -109,7 +111,5 @@ describe OpenIDConnectAuthenticator do
       expect(authenticator.discovery_document).to eq(nil)
       expect(stub).to have_been_requested.once
     end
-
   end
-
 end

@@ -206,7 +206,6 @@ module ::OmniAuth
         response = client.request(:post, options[:client_options][:token_url], body: get_token_options)
         ::OAuth2::AccessToken.from_hash(client, response.parsed)
       end
-
     end
   end
 end
