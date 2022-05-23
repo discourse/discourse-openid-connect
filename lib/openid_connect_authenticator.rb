@@ -108,6 +108,6 @@ class OpenIDConnectAuthenticator < Auth::ManagedAuthenticator
   end
 
   def request_timeout_seconds
-    GlobalSetting.openid_connect_request_timout_seconds
+    GlobalSetting.openid_connect_request_timeout_seconds
   end
 end
