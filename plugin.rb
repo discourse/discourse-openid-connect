@@ -13,6 +13,8 @@ require_relative "lib/openid_connect_faraday_formatter"
 require_relative "lib/omniauth_open_id_connect"
 require_relative "lib/openid_connect_authenticator"
 
+GlobalSetting.add_default :openid_connect_request_timout_seconds, 10
+
 # RP-initiated logout
 # https://openid.net/specs/openid-connect-rpinitiated-1_0.html
 on(:before_session_destroy) do |data|
