@@ -1,8 +1,6 @@
 # frozen_string_literal: true
 
 class OpenIDConnectAuthenticator < Auth::ManagedAuthenticator
-  REQUEST_TIMEOUT_SECONDS = 10
-
   def name
     'oidc'
   end
@@ -45,7 +43,7 @@ class OpenIDConnectAuthenticator < Auth::ManagedAuthenticator
     result = Discourse.cache.fetch("openid-connect-discovery-#{document_url}", expires_in: 10.minutes) do
       from_cache = false
       oidc_log("Fetching discovery document from #{document_url}")
-      connection = Faraday.new(request: { timeout: REQUEST_TIMEOUT_SECONDS }) { |c| c.use Faraday::Response::RaiseError }
+      connection = Faraday.new(request: { timeout: request_timeout_seconds }) { |c| c.use Faraday::Response::RaiseError }
       JSON.parse(connection.get(document_url).body)
     rescue Faraday::Error, JSON::ParserError => e
       oidc_log("Fetching discovery document raised error #{e.class} #{e.message}", error: true)
@@ -94,7 +92,7 @@ class OpenIDConnectAuthenticator < Auth::ManagedAuthenticator
           claims: SiteSetting.openid_connect_claims
         )
 
-        opts[:client_options][:connection_opts] = { request: { timeout: REQUEST_TIMEOUT_SECONDS } }
+        opts[:client_options][:connection_opts] = { request: { timeout: request_timeout_seconds } }
 
         if SiteSetting.openid_connect_verbose_logging
           opts[:client_options][:connection_build] = lambda { |builder|
@@ -107,5 +105,9 @@ class OpenIDConnectAuthenticator < Auth::ManagedAuthenticator
         end
 
       }
+  end
+
+  def request_timeout_seconds
+    GlobalSetting.openid_connect_request_timout_seconds
   end
 end
