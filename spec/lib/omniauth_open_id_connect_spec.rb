@@ -174,6 +174,14 @@ describe OmniAuth::Strategies::OpenIDConnect do
       end
 
       context "with userinfo enabled" do
+        let(:userinfo_response) {
+          {
+            sub: "someuserid",
+            name: "My Userinfo Name",
+            email: "userinfoemail@example.com",
+          }
+        }
+
         before do
           stub_request(:post, "https://id.example.com/token").
             with(body: hash_including("code" => "supersecretcode", "p" => "someallowedvalue")).
@@ -185,11 +193,13 @@ describe OmniAuth::Strategies::OpenIDConnect do
 
           stub_request(:get, "https://id.example.com/userinfo").
             with(headers: { 'Authorization' => 'Bearer AnAccessToken' }).
-            to_return(status: 200, body: {
-              sub: "someuserid",
-              name: "My Userinfo Name",
-              email: "userinfoemail@example.com",
-            }.to_json, headers: { "Content-Type" => "application/json" })
+            to_return do |request|
+              {
+                status: 200,
+                body: userinfo_response.to_json,
+                headers: { "Content-Type" => "application/json" }
+              }
+            end
         end
 
         it "fetches credentials and auth token correctly" do
@@ -198,6 +208,14 @@ describe OmniAuth::Strategies::OpenIDConnect do
           expect(subject.info[:name]).to eq("My Userinfo Name")
           expect(subject.info[:email]).to eq("userinfoemail@example.com")
           expect(@app_called).to eq(true)
+        end
+
+        it "handles mismatching `sub` correctly" do
+          userinfo_response["sub"] = "someothersub"
+          callback_response = subject.callback_phase
+          expect(callback_response[0]).to eq(302)
+          expect(callback_response[1]["Location"]).to eq("/auth/failure?message=openid_connect_sub_mismatch&strategy=openidconnect")
+          expect(@app_called).to eq(false)
         end
       end
     end

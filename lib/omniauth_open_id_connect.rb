@@ -10,6 +10,7 @@ module ::OmniAuth
   module Strategies
     class OpenIDConnect < OmniAuth::Strategies::OAuth2
       class NonceVerifyError < StandardError; end
+      class SubVerifyError < StandardError; end
 
       option :scope, "openid"
       option :discovery, true
@@ -113,6 +114,8 @@ module ::OmniAuth
           fail!(:jwt_decode_failed, e)
         rescue NonceVerifyError => e
           fail!(:jwt_nonce_verify_failed, e)
+        rescue SubVerifyError => e
+          fail!(:openid_connect_sub_mismatch, e)
         end
       end
 
@@ -152,7 +155,13 @@ module ::OmniAuth
           info
         end
 
-        return fail!(:csrf_detected, CallbackError.new(:csrf_detected, "CSRF detected")) unless @raw_info['sub'] == id_token_info['sub']
+        userinfo_sub = @raw_info['sub']
+        id_token_sub = id_token_info['sub']
+        if userinfo_sub != id_token_sub
+          raise SubVerifyError.new(
+            "OIDC `sub` mismatch. ID Token value: #{id_token_sub.inspect}. UserInfo value: #{userinfo_sub.inspect}"
+          )
+        end
         @raw_info
       end
 
