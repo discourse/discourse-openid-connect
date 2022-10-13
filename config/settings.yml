@@ -13,6 +13,8 @@ plugins:
     default: ""
   openid_connect_allow_association_change:
     default: false
+  openid_connect_username_association_change:
+    default: false
   openid_connect_overrides_email:
     default: false
   openid_connect_authorize_scope:

@@ -32,6 +32,14 @@ class OpenIDConnectAuthenticator < Auth::ManagedAuthenticator
     SiteSetting.openid_connect_overrides_email
   end
 
+  def match_by_email
+    !match_by_username
+  end
+
+  def match_by_username
+    SiteSetting.openid_connect_username_association_change
+  end
+
   def discovery_document
     document_url = SiteSetting.openid_connect_discovery_document.presence
     if !document_url
