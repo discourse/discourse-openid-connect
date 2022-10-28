@@ -43,7 +43,10 @@ class OpenIDConnectAuthenticator < Auth::ManagedAuthenticator
     result = Discourse.cache.fetch("openid-connect-discovery-#{document_url}", expires_in: 10.minutes) do
       from_cache = false
       oidc_log("Fetching discovery document from #{document_url}")
-      connection = Faraday.new(request: { timeout: request_timeout_seconds }) { |c| c.use Faraday::Response::RaiseError }
+      connection = Faraday.new(request: { timeout: request_timeout_seconds }) do |c|
+        c.use Faraday::Response::RaiseError
+        c.adapter FinalDestination::FaradayAdapter
+      end
       JSON.parse(connection.get(document_url).body)
     rescue Faraday::Error, JSON::ParserError => e
       oidc_log("Fetching discovery document raised error #{e.class} #{e.message}", error: true)
@@ -94,16 +97,14 @@ class OpenIDConnectAuthenticator < Auth::ManagedAuthenticator
 
         opts[:client_options][:connection_opts] = { request: { timeout: request_timeout_seconds } }
 
-        if SiteSetting.openid_connect_verbose_logging
-          opts[:client_options][:connection_build] = lambda { |builder|
+        opts[:client_options][:connection_build] = lambda { |builder|
+          if SiteSetting.openid_connect_verbose_logging
             builder.response :logger, Rails.logger, { bodies: true, formatter: OIDCFaradayFormatter }
+          end
 
-            # Default stack:
-            builder.request :url_encoded             # form-encode POST params
-            builder.adapter Faraday.default_adapter  # make requests with Net::HTTP
-          }
-        end
-
+          builder.request :url_encoded                      # form-encode POST params
+          builder.adapter FinalDestination::FaradayAdapter  # make requests with FinalDestination::HTTP
+        }
       }
   end
 
