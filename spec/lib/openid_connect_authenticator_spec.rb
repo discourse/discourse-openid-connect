@@ -61,6 +61,14 @@ describe OpenIDConnectAuthenticator do
     end
   end
 
+  context "when match_by_email is false" do
+    it 'does not match the user' do
+      SiteSetting.openid_connect_match_by_email = false
+      result = authenticator.after_authenticate(hash)
+      expect(result.user).to eq(nil)
+    end
+  end
+
   describe "discovery document fetching" do
     let(:document_url) { SiteSetting.openid_connect_discovery_document = "https://id.example.com/.well-known/openid-configuration" }
     let(:document) do

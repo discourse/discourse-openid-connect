@@ -32,3 +32,5 @@ plugins:
   openid_connect_claims:
     default: ""
     textarea: true
+  openid_connect_match_by_email:
+    default: true
