@@ -5,3 +5,5 @@
 # https://translate.discourse.org/
 
 fa_IR:
+  site_settings:
+    openid_connect_match_by_email: "از آدرس ایمیلی که برای مطابقت با احراز هویت OpenID متصل به حساب کاربری موجود دیسکورس استفاده کنید."
