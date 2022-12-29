@@ -1,14 +1,14 @@
 # frozen_string_literal: true
 
-require_relative '../../lib/omniauth_open_id_connect'
-require 'rails_helper'
+require_relative "../../lib/omniauth_open_id_connect"
+require "rails_helper"
 
 describe OmniAuth::Strategies::OpenIDConnect do
   let(:app) do
     @app_called = false
     lambda do |*args|
       @app_called = true
-      [200, {}, ['Hello.']]
+      [200, {}, ["Hello."]]
     end
   end
 
@@ -22,7 +22,12 @@ describe OmniAuth::Strategies::OpenIDConnect do
   end
 
   subject do
-    OmniAuth::Strategies::OpenIDConnect.new(app, 'appid', 'secret', discovery_document: discovery_document)
+    OmniAuth::Strategies::OpenIDConnect.new(
+      app,
+      "appid",
+      "secret",
+      discovery_document: discovery_document,
+    )
   end
 
   before { OmniAuth.config.test_mode = true }
@@ -30,7 +35,8 @@ describe OmniAuth::Strategies::OpenIDConnect do
   after { OmniAuth.config.test_mode = false }
 
   it "throws error for missing discovery document" do
-    strategy = OmniAuth::Strategies::OpenIDConnect.new(app, 'appid', 'secret', discovery_document: nil)
+    strategy =
+      OmniAuth::Strategies::OpenIDConnect.new(app, "appid", "secret", discovery_document: nil)
     expect { strategy.discover! }.to raise_error(::OmniAuth::OpenIDConnect::DiscoveryError)
   end
 
@@ -51,7 +57,9 @@ describe OmniAuth::Strategies::OpenIDConnect do
   end
 
   it "uses basic authentication when both client_secret_basic and client_secret_post are provided" do
-    discovery_document.merge!({ "token_endpoint_auth_methods_supported" => ["client_secret_basic", "client_secret_post"] })
+    discovery_document.merge!(
+      { "token_endpoint_auth_methods_supported" => %w[client_secret_basic client_secret_post] },
+    )
     subject.discover!
     expect(subject.options.client_options.auth_scheme).to eq(:basic_auth)
   end
@@ -62,10 +70,13 @@ describe OmniAuth::Strategies::OpenIDConnect do
     expect(subject.options.client_options.auth_scheme).to eq(:request_body)
   end
 
-  context 'with valid discovery document loaded' do
+  context "with valid discovery document loaded" do
     before do
-      subject.stubs(:request).returns(mock('object'))
-      subject.request.stubs(:params).returns("p" => "someallowedvalue", "somethingelse" => "notallowed")
+      subject.stubs(:request).returns(mock("object"))
+      subject
+        .request
+        .stubs(:params)
+        .returns("p" => "someallowedvalue", "somethingelse" => "notallowed")
       subject.options.claims = '{"userinfo":{"email":null,"email_verified":null}'
       subject.discover!
     end
@@ -74,7 +85,9 @@ describe OmniAuth::Strategies::OpenIDConnect do
       expect(subject.options.client_options.site).to eq("https://id.example.com/")
       expect(subject.options.client_options.authorize_url).to eq("https://id.example.com/authorize")
       expect(subject.options.client_options.token_url).to eq("https://id.example.com/token")
-      expect(subject.options.client_options.userinfo_endpoint).to eq("https://id.example.com/userinfo")
+      expect(subject.options.client_options.userinfo_endpoint).to eq(
+        "https://id.example.com/userinfo",
+      )
     end
 
     describe "authorize parameters" do
@@ -87,11 +100,13 @@ describe OmniAuth::Strategies::OpenIDConnect do
 
       it "sets a nonce" do
         expect((nonce = subject.authorize_params[:nonce]).size).to eq(64)
-        expect(subject.session['omniauth.nonce']).to eq(nonce)
+        expect(subject.session["omniauth.nonce"]).to eq(nonce)
       end
 
       it "passes claims through to authorize endpoint if present" do
-        expect(subject.authorize_params[:claims]).to eq('{"userinfo":{"email":null,"email_verified":null}')
+        expect(subject.authorize_params[:claims]).to eq(
+          '{"userinfo":{"email":null,"email_verified":null}',
+        )
       end
 
       it "does not pass claims if empty string" do
@@ -103,7 +118,7 @@ describe OmniAuth::Strategies::OpenIDConnect do
     describe "token parameters" do
       it "passes through parameters from authorize phase" do
         expect(subject.authorize_params[:p]).to eq("someallowedvalue")
-        subject.stubs(:request).returns(mock())
+        subject.stubs(:request).returns(mock)
         subject.request.stubs(:params).returns({})
         expect(subject.token_params[:p]).to eq("someallowedvalue")
       end
@@ -115,8 +130,11 @@ describe OmniAuth::Strategies::OpenIDConnect do
 
         subject.stubs(:full_host).returns("https://example.com")
 
-        subject.stubs(:request).returns(mock())
-        subject.request.stubs(:params).returns("state" => auth_params[:state], "code" => "supersecretcode")
+        subject.stubs(:request).returns(mock)
+        subject
+          .request
+          .stubs(:params)
+          .returns("state" => auth_params[:state], "code" => "supersecretcode")
 
         payload = {
           iss: "https://id.example.com/",
@@ -126,15 +144,21 @@ describe OmniAuth::Strategies::OpenIDConnect do
           exp: Time.now.to_i + 120,
           nonce: auth_params[:nonce],
           name: "My Auth Token Name",
-          email: "tokenemail@example.com"
+          email: "tokenemail@example.com",
         }
-        @token = ::JWT.encode payload, nil, 'none'
+        @token = ::JWT.encode payload, nil, "none"
       end
 
       it "handles error redirects correctly" do
-        subject.stubs(:request).returns(mock())
-        subject.request.stubs(:params).returns("error" => true, "error_description" => "User forgot password")
-        subject.options.error_handler = lambda { |error, message| return "https://example.com/error_redirect" if message.include?("forgot password") }
+        subject.stubs(:request).returns(mock)
+        subject
+          .request
+          .stubs(:params)
+          .returns("error" => true, "error_description" => "User forgot password")
+        subject.options.error_handler =
+          lambda do |error, message|
+            return "https://example.com/error_redirect" if message.include?("forgot password")
+          end
         expect(subject.callback_phase[0]).to eq(302)
         expect(subject.callback_phase[1]["Location"]).to eq("https://example.com/error_redirect")
         expect(@app_called).to eq(false)
@@ -142,11 +166,15 @@ describe OmniAuth::Strategies::OpenIDConnect do
 
       context "with userinfo disabled" do
         before do
-          stub_request(:post, "https://id.example.com/token").
-            with(body: hash_including("code" => "supersecretcode", "p" => "someallowedvalue")).
-            to_return(status: 200, body: {
-            "id_token": @token,
-          }.to_json, headers: { "Content-Type" => "application/json" })
+          stub_request(:post, "https://id.example.com/token").with(
+            body: hash_including("code" => "supersecretcode", "p" => "someallowedvalue"),
+          ).to_return(
+            status: 200,
+            body: { id_token: @token }.to_json,
+            headers: {
+              "Content-Type" => "application/json",
+            },
+          )
 
           subject.options.use_userinfo = false
         end
@@ -174,30 +202,30 @@ describe OmniAuth::Strategies::OpenIDConnect do
       end
 
       context "with userinfo enabled" do
-        let(:userinfo_response) {
-          {
-            sub: "someuserid",
-            name: "My Userinfo Name",
-            email: "userinfoemail@example.com",
-          }
-        }
+        let(:userinfo_response) do
+          { sub: "someuserid", name: "My Userinfo Name", email: "userinfoemail@example.com" }
+        end
 
         before do
-          stub_request(:post, "https://id.example.com/token").
-            with(body: hash_including("code" => "supersecretcode", "p" => "someallowedvalue")).
-            to_return(status: 200, body: {
-            "access_token": "AnAccessToken",
-            "expires_in": 3600,
-            "id_token": @token,
-          }.to_json, headers: { "Content-Type" => "application/json" })
+          stub_request(:post, "https://id.example.com/token").with(
+            body: hash_including("code" => "supersecretcode", "p" => "someallowedvalue"),
+          ).to_return(
+            status: 200,
+            body: { access_token: "AnAccessToken", expires_in: 3600, id_token: @token }.to_json,
+            headers: {
+              "Content-Type" => "application/json",
+            },
+          )
 
-          stub_request(:get, "https://id.example.com/userinfo").
-            with(headers: { 'Authorization' => 'Bearer AnAccessToken' }).
-            to_return do |request|
+          stub_request(:get, "https://id.example.com/userinfo")
+            .with(headers: { "Authorization" => "Bearer AnAccessToken" })
+            .to_return do |request|
               {
                 status: 200,
                 body: userinfo_response.to_json,
-                headers: { "Content-Type" => "application/json" }
+                headers: {
+                  "Content-Type" => "application/json",
+                },
               }
             end
         end
@@ -214,7 +242,9 @@ describe OmniAuth::Strategies::OpenIDConnect do
           userinfo_response["sub"] = "someothersub"
           callback_response = subject.callback_phase
           expect(callback_response[0]).to eq(302)
-          expect(callback_response[1]["Location"]).to eq("/auth/failure?message=openid_connect_sub_mismatch&strategy=openidconnect")
+          expect(callback_response[1]["Location"]).to eq(
+            "/auth/failure?message=openid_connect_sub_mismatch&strategy=openidconnect",
+          )
           expect(@app_called).to eq(false)
         end
       end
