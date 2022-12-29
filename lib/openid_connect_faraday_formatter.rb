@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-require 'faraday/logging/formatter'
+require "faraday/logging/formatter"
 
 class OIDCFaradayFormatter < Faraday::Logging::Formatter
   def request(env)

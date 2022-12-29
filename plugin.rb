@@ -36,14 +36,16 @@ on(:before_session_destroy) do |data|
 
   end_session_endpoint = authenticator.discovery_document["end_session_endpoint"].presence
   if !end_session_endpoint
-    authenticator.oidc_log "Logout: No end_session_endpoint found in discovery document", error: true
+    authenticator.oidc_log "Logout: No end_session_endpoint found in discovery document",
+                           error: true
     next
   end
 
   begin
     uri = URI.parse(end_session_endpoint)
   rescue URI::Error
-    authenticator.oidc_log "Logout: unable to parse end_session_endpoint #{end_session_endpoint}", error: true
+    authenticator.oidc_log "Logout: unable to parse end_session_endpoint #{end_session_endpoint}",
+                           error: true
   end
 
   authenticator.oidc_log "Logout: Redirecting user_id=#{data[:user].id} to end_session_endpoint"
