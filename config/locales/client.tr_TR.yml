@@ -5,3 +5,9 @@
 # https://translate.discourse.org/
 
 tr_TR:
+  js:
+    login:
+      oidc:
+        name: "OpenID Connect"
+        title: "OpenID Connect ile"
+        message: "OpenID Connect ile Kimlik Doğrulama"
