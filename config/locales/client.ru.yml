@@ -9,5 +9,5 @@ ru:
     login:
       oidc:
         name: "OpenID Connect"
-        title: "OpenID Connect"
+        title: "через OpenID Connect"
         message: "Аутентификация через OpenID Connect"
