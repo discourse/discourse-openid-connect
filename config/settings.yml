@@ -7,6 +7,7 @@ plugins:
     default: ""
   openid_connect_client_secret:
     default: ""
+    secret: true
   openid_connect_rp_initiated_logout:
     default: false
   openid_connect_rp_initiated_logout_redirect:
