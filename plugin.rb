@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 # name: discourse-openid-connect
-# about: Allows users to login to your forum using an OpenID Connect provider as authentication.  
+# about: Allows users to login to your forum using an OpenID Connect provider as authentication.
 # meta_topic_id: 103632
 # version: 1.0
 # authors: David Taylor
