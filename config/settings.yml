@@ -1,4 +1,4 @@
-plugins:
+discourse_openid_connect:
   openid_connect_enabled:
     default: false
   openid_connect_discovery_document:
