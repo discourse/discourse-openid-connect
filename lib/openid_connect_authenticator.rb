@@ -24,7 +24,8 @@ class OpenIDConnectAuthenticator < Auth::ManagedAuthenticator
       true
     else
       # Many providers violate the spec, and send this as a string rather than a boolean
-      supplied_verified_boolean == true || supplied_verified_boolean == "true"
+      supplied_verified_boolean == true ||
+        (supplied_verified_boolean.is_a?(String) && supplied_verified_boolean.downcase == "true")
     end
   end
 
