@@ -4,6 +4,15 @@ require_relative "../../lib/omniauth_open_id_connect"
 require "rails_helper"
 
 describe OmniAuth::Strategies::OpenIDConnect do
+  subject do
+    OmniAuth::Strategies::OpenIDConnect.new(
+      app,
+      "appid",
+      "secret",
+      discovery_document: discovery_document,
+    )
+  end
+
   let(:app) do
     @app_called = false
     lambda do |*args|
@@ -21,14 +30,6 @@ describe OmniAuth::Strategies::OpenIDConnect do
     }
   end
 
-  subject do
-    OmniAuth::Strategies::OpenIDConnect.new(
-      app,
-      "appid",
-      "secret",
-      discovery_document: discovery_document,
-    )
-  end
 
   before { OmniAuth.config.test_mode = true }
 
