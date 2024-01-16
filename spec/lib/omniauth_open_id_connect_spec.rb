@@ -161,7 +161,7 @@ describe OmniAuth::Strategies::OpenIDConnect do
           .returns("error" => true, "error_description" => "User forgot password")
         strategy.options.error_handler =
           lambda do |error, message|
-            return "https://example.com/error_redirect" if message.include?("forgot password")
+            "https://example.com/error_redirect" if message.include?("forgot password")
           end
         expect(strategy.callback_phase[0]).to eq(302)
         expect(strategy.callback_phase[1]["Location"]).to eq("https://example.com/error_redirect")

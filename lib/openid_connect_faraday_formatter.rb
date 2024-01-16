@@ -5,7 +5,7 @@ require "faraday/logging/formatter"
 class OIDCFaradayFormatter < Faraday::Logging::Formatter
   def request(env)
     warn <<~LOG
-      OIDC Debugging: request #{env.method.upcase} #{env.url.to_s}
+      OIDC Debugging: request #{env.method.upcase} #{env.url}
 
       Headers: #{env.request_headers}
 
@@ -17,7 +17,7 @@ class OIDCFaradayFormatter < Faraday::Logging::Formatter
     warn <<~LOG
       OIDC Debugging: response status #{env.status}
 
-      From #{env.method.upcase} #{env.url.to_s}
+      From #{env.method.upcase} #{env.url}
 
       Headers: #{env.response_headers}
 
