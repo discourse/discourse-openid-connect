@@ -9,7 +9,7 @@ ru:
     admin:
       site_settings:
         categories:
-          discourse_openid_connect: "Discourse для OpenID Connect"
+          discourse_openid_connect: "OpenID Connect для Discourse"
   js:
     login:
       oidc:
