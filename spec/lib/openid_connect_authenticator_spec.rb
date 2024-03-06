@@ -5,7 +5,7 @@ require_relative "../../lib/omniauth_open_id_connect"
 
 describe OpenIDConnectAuthenticator do
   let(:authenticator) { described_class.new }
-  fab!(:user) { Fabricate(:user) }
+  fab!(:user)
   let(:hash) do
     OmniAuth::AuthHash.new(
       provider: "oidc",
