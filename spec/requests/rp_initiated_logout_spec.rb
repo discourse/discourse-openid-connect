@@ -16,7 +16,7 @@ describe "OIDC RP-Initiated Logout" do
       end_session_endpoint: "https://id.example.com/endsession",
     }
   end
-  fab!(:user) { Fabricate(:user) }
+  fab!(:user)
 
   before do
     SiteSetting.openid_connect_enabled = true
