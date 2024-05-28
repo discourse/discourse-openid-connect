@@ -88,7 +88,7 @@ module ::OmniAuth
       def authorize_params
         super.tap do |params|
           options[:passthrough_authorize_options].each do |k|
-            params[k] = request.params[k.to_s] unless [nil, ""].include?(request.params[k.to_s])
+            params[k] = request.params[k.to_s] if [nil, ""].exclude?(request.params[k.to_s])
           end
 
           params[:claims] = options[:claims] if options[:claims].present?
@@ -97,7 +97,7 @@ module ::OmniAuth
           session["omniauth.nonce"] = params[:nonce] = SecureRandom.hex(32)
 
           options[:passthrough_token_options].each do |k|
-            session["omniauth.param.#{k}"] = request.params[k.to_s] unless [nil, ""].include?(
+            session["omniauth.param.#{k}"] = request.params[k.to_s] if [nil, ""].exclude?(
               request.params[k.to_s],
             )
           end
@@ -108,7 +108,7 @@ module ::OmniAuth
         params = {}
         options[:passthrough_token_options].each do |k|
           val = session.delete("omniauth.param.#{k}")
-          params[k] = val unless [nil, ""].include?(val)
+          params[k] = val if [nil, ""].exclude?(val)
         end
         super.merge(params)
       end
