@@ -125,6 +125,10 @@ class OpenIDConnectAuthenticator < Auth::ManagedAuthenticator
                             builder.request :url_encoded # form-encode POST params
                             builder.adapter FinalDestination::FaradayAdapter # make requests with FinalDestination::HTTP
                           end
+
+                          opts[:client_options][
+                            :raise_errors
+                          ] = SiteSetting.openid_connect_verbose_logging
                         }
   end
 
