@@ -36,5 +36,4 @@ discourse_openid_connect:
   openid_connect_match_by_email:
     default: true
   openid_connect_use_pkce:
-    default: true
-    client: true
+    default: false
