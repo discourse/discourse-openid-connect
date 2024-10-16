@@ -1,6 +1,6 @@
 # frozen_string_literal: true
-require 'base64'
-require 'openssl'
+require "base64"
+require "openssl"
 
 class OpenIDConnectAuthenticator < Auth::ManagedAuthenticator
   def name
@@ -112,9 +112,11 @@ class OpenIDConnectAuthenticator < Auth::ManagedAuthenticator
                             pkce: SiteSetting.openid_connect_use_pkce,
                             pkce_options: {
                               code_verifier: -> { generate_code_verifier },
-                              code_challenge: -> (code_verifier) { generate_code_challenge(code_verifier) },
-                              code_challenge_method: 'S256'
-                            }
+                              code_challenge: ->(code_verifier) do
+                                generate_code_challenge(code_verifier)
+                              end,
+                              code_challenge_method: "S256",
+                            },
                           )
 
                           opts[:client_options][:connection_opts] = {
@@ -137,13 +139,11 @@ class OpenIDConnectAuthenticator < Auth::ManagedAuthenticator
   end
 
   def generate_code_verifier
-    Base64.urlsafe_encode64(OpenSSL::Random.random_bytes(32)).tr('=', '')
+    Base64.urlsafe_encode64(OpenSSL::Random.random_bytes(32)).tr("=", "")
   end
 
   def generate_code_challenge(code_verifier)
-    Base64.urlsafe_encode64(
-      Digest::SHA256.digest(code_verifier)
-    ).tr('+/', '-_').tr('=', '')
+    Base64.urlsafe_encode64(Digest::SHA256.digest(code_verifier)).tr("+/", "-_").tr("=", "")
   end
 
   def request_timeout_seconds
