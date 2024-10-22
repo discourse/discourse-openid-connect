@@ -21,6 +21,7 @@ he:
     openid_connect_overrides_email: "בכל כניסה למערכת, לדרוס את כתובת הדוא״ל עם ערך openid-connect. עובד כמו ההגדרה `auth_overrides_email` (אימות עוקף דוא״ל), אך הוא משמש נקודתית לכניסה עם OpenID Connect."
     openid_connect_claims: "הגדרת הטענות במפורש לשימוש מול ספקים שלא מעבירים נתונים בחזרה על סמך תחומים. (JSON)"
     openid_connect_match_by_email: "להשתמש בכתובת דוא״ל כדי לתאם את אימותי OpenID Connect לחשבונות משתמש קיימים ב־Discourse."
+    openid_connect_use_pkce: "הפעלת מפתח הוכחה לחילופי קודים (PKCE) עבור אימות OpenID Connect."
   login:
     omniauth_error:
       openid_connect_discovery_error: לא ניתן לקבל תצורה מספק הזהות. נא לנסות שוב
