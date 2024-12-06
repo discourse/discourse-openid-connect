@@ -21,6 +21,7 @@ nl:
     openid_connect_overrides_email: "Overschrijf bij elke aanmelding het e-mailadres van de gebruiker met de waarde van OpenID Connect. Werkt hetzelfde als de instelling 'auth_overrides_email', maar is specifiek voor OpenID Connect-aanmeldingen."
     openid_connect_claims: "Definieer expliciet de claims voor gebruik met providers die geen gegevens retourneren op basis van bereiken. (JSON)"
     openid_connect_match_by_email: "E-mailadres gebruiken om OpenID Connect-verificaties te matchen met bestaande Discourse-gebruikersaccounts."
+    openid_connect_use_pkce: "Schakel Proof Key for Code Exchange (PKCE) in voor OpenID Connect-verificatie."
   login:
     omniauth_error:
       openid_connect_discovery_error: Kan configuratie niet ophalen van identiteitsprovider. Probeer het opnieuw.

@@ -21,6 +21,7 @@ ja:
     openid_connect_overrides_email: "ログインごとに、ユーザーのメールアドレスを openid-connect 値でオーバーライドする。`auth_overrides_email` と同じように機能しますが、OpenID Connect ログインに固有です。"
     openid_connect_claims: "スコープに基づいてデータを戻さないプロバイダーで使用するための要求を明示的に定義する。（JSON）"
     openid_connect_match_by_email: "メールアドレスを使用して、OpenID Connect 認証を既存の Discourse ユーザーアカウントと照合する。"
+    openid_connect_use_pkce: "OpenID Connect 認証の Proof Key for Code Exchange（PKCE）を有効にする。"
   login:
     omniauth_error:
       openid_connect_discovery_error: ID プロバイダーから構成を取得できません。もう一度お試しください。

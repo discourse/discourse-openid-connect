@@ -21,6 +21,7 @@ fi:
     openid_connect_overrides_email: "Korvaa jokaisen kirjautumisen yhteydessä käyttäjän sähköpostiosoite openid-connect-arvolla. Toimii samalla tavalla kuin \"auth_overrides_email\" -asetus, mutta koskee OpenID Connect -kirjautumisia."
     openid_connect_claims: "Määritä käytettävät vaatimukset palveluntarjoajilla, jotka eivät lähetä tietoja takaisin alueiden perusteella. (JSON)"
     openid_connect_match_by_email: "Yhdistä OpenID Connect -todennukset olemassa oleviin Discourse-tileihin sähköpostiosoitteiden perusteella."
+    openid_connect_use_pkce: "Ota käyttöön Proof Key for Code Exchange (PKCE) OpenID Connect -todennuksessa."
   login:
     omniauth_error:
       openid_connect_discovery_error: Määrityksen noutaminen identiteettipalveluntarjoajalta ei onnistunut. Yritä uudelleen.
