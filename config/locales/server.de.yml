@@ -21,6 +21,7 @@ de:
     openid_connect_overrides_email: "Überschreibe bei jeder Anmeldung die E-Mail-Adresse des Benutzers mit dem openid-connect-Wert. Funktioniert genauso wie die Einstellung `auth_overrides_email`, gilt aber spezifisch für OpenID-Connect-Anmeldungen."
     openid_connect_claims: "Definiert explizit Ansprüche, die bei Anbietern verwendet werden sollen, die keine Daten basierend auf Bereichen zurückgeben. (JSON)"
     openid_connect_match_by_email: "Verwende eine E-Mail-Adresse, um OpenID Connect-Authentifizierungen mit bestehenden Discourse-Benutzerkonten abzugleichen."
+    openid_connect_use_pkce: "Proof Key for Code Exchange (PKCE) für „OpenID Connect“-Authentifizierung aktivieren."
   login:
     omniauth_error:
       openid_connect_discovery_error: Konfiguration kann nicht vom Identitätsanbieter abgerufen werden. Bitte versuche es erneut.
