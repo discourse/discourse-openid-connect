@@ -21,6 +21,7 @@ ar:
     openid_connect_overrides_email: "تجاوز عنوان البريد الإلكتروني للمستخدم باستخدام قيمة openid-connect في كل عملية تسجيل دخول. يعمل هذا الإعداد بنفس طريقة عمل `auth_overrides_email`، لكنه خاص بعمليات تسجيل الدخول باستخدام OpenID Connect."
     openid_connect_claims: "تحديد المطالبات بشكلٍ صريح، والتي سيتم استخدامها مع مقدِّمي الخدمة الذي لا يعيدون تمرير البيانات حسب النطاقات (JSON)"
     openid_connect_match_by_email: "استخدم عنوان البريد الإلكتروني لمطابقة مصادقات OpenID Connect مع حسابات مستخدمي Discourse الموجودة."
+    openid_connect_use_pkce: "تفعيل Proof Key for Code Exchange (PKCE) لمصادقة OpenID Connect."
   login:
     omniauth_error:
       openid_connect_discovery_error: يتعذَّر جلب التهيئة من موفِّر الهوية. يُرجى إعادة المحاولة.
