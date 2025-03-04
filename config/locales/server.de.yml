@@ -1,9 +1,3 @@
-# WARNING: Never edit this file.
-# It will be overwritten when translations are pulled from Crowdin.
-#
-# To work with us on translations, join this project:
-# https://translate.discourse.org/
-
 de:
   site_settings:
     openid_connect_enabled: Aktiviere die OpenID-Connect-Authentifizierung. Passe den Text der Benutzeroberfläche <a href='%{base_path}/admin/customize/site_texts?q=js.login.oidc'>hier</a> an

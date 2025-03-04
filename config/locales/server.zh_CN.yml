@@ -1,10 +1,4 @@
-# WARNING: Never edit this file.
-# It will be overwritten when translations are pulled from Crowdin.
-#
-# To work with us on translations, join this project:
-# https://translate.discourse.org/
-
-zh_CN:
+zh-CN:
   site_settings:
     openid_connect_enabled: 启用 OpenID Connect 身份验证。在<a href='%{base_path}/admin/customize/site_texts?q=js.login.oidc'>此处</a>自定义用户界面文本
     openid_connect_discovery_document: "OpenID Connect 发现文档 URL。通常位于 'https://your.domain/.well-known/openid-configuration' 下"
